@@ -17,13 +17,19 @@ builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var rawUrl = builder.Configuration.GetConnectionString("DefaultConnection")
-                 ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+    // ƯU TIÊN lấy DATABASE_URL từ Render trước, nếu không có mới tìm trong appsettings.json
+    var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
+                 ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+    if (string.IsNullOrEmpty(rawUrl))
+    {
+        throw new Exception("Could not find database connection string.");
+    }
 
     string connectionString = rawUrl;
 
-    // Tự động chuyển đổi định dạng postgres:// sang định dạng .NET hiểu được
-    if (!string.IsNullOrEmpty(rawUrl) && rawUrl.StartsWith("postgres://"))
+    // Chuyển đổi định dạng postgres:// của Render sang định dạng ADO.NET
+    if (rawUrl.StartsWith("postgres://"))
     {
         var uri = new Uri(rawUrl);
         var userInfo = uri.UserInfo.Split(':');
@@ -35,7 +41,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "RestaurantPos.Api";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "RestaurantPos.Web";
-var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "VERY_LONG_AND_SECURE_SECRET_KEY_FOR_JWT_TOKEN_123456";
+var jwtSecret = builder.Configuration["Jwt__SecretKey"]
+                ?? Environment.GetEnvironmentVariable("Jwt__SecretKey")
+                ?? "VERY_LONG_AND_SECURE_SECRET_KEY_FOR_JWT_TOKEN_123456_CHANGE_ME";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -81,7 +89,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 builder.Configuration["Frontend:Url"] ?? "http://localhost:5173",
-                "https://*.onrender.com"
+                "https://do-an-frontend.onrender.com" // Hãy thay bằng URL Static Site của bạn
             )
             .SetIsOriginAllowedToAllowWildcardSubdomains()
             .AllowAnyHeader()
@@ -92,6 +100,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Migrate database on startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
