@@ -22,12 +22,14 @@ class AuthApiService {
     required String username,
     required String password,
     required String restaurantName,
+    String? phone,
     String role = 'owner',
   }) async {
     final data = await _apiClient.post('/auth/register', {
       'username': username,
       'password': password,
       'restaurantName': restaurantName,
+      'phone': phone,
       'role': role,
     });
 

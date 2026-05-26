@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:restaurant_pos/screens/main_screen.dart';
 import 'package:restaurant_pos/screens/login/register_screen.dart';
 import 'package:restaurant_pos/screens/settings/store_settings_screen.dart';
 import 'providers/table_provider.dart';
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginScreen(),
-        '/home': (context) => const HomeScreen(),
+        '/home': (context) => const MainScreen(),
         '/table_management': (context) => const TableManagementScreen(),
         '/orders': (context) => const OrderManagementScreen(),
         '/menu': (context) => const ProductManagementScreen(),
