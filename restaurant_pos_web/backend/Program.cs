@@ -17,42 +17,20 @@ builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-    string? connectionString = null;
+    var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
+                 ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
     if (!string.IsNullOrEmpty(rawUrl))
     {
-        Console.WriteLine("=> Found DATABASE_URL in environment.");
-        rawUrl = rawUrl.Trim();
-
+        string connectionString = rawUrl;
         if (rawUrl.StartsWith("postgres://") || rawUrl.StartsWith("postgresql://"))
         {
-            try
-            {
-                var uri = new Uri(rawUrl.Replace("postgresql://", "postgres://"));
-                var userInfo = uri.UserInfo.Split(':');
-                connectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.AbsolutePath.TrimStart('/')};SSL Mode=Require;Trust Server Certificate=true";
-                Console.WriteLine("=> Successfully parsed PostgreSQL URI.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"=> Error parsing DATABASE_URL: {ex.Message}");
-            }
+            var uri = new Uri(rawUrl.Replace("postgresql://", "postgres://"));
+            var userInfo = uri.UserInfo.Split(':');
+            connectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.AbsolutePath.TrimStart('/')};SSL Mode=Require;Trust Server Certificate=true";
         }
+        options.UseNpgsql(connectionString);
     }
-
-    if (string.IsNullOrEmpty(connectionString))
-    {
-        connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-        Console.WriteLine("=> Using connection string from configuration (appsettings.json).");
-    }
-
-    if (string.IsNullOrEmpty(connectionString))
-    {
-        throw new Exception("No database connection string found!");
-    }
-
-    options.UseNpgsql(connectionString);
 });
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "RestaurantPos.Api";
@@ -103,7 +81,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.SetIsOriginAllowed(_ => true) // Cho phép tất cả để tránh lỗi CORS khi deploy
+        policy.SetIsOriginAllowed(_ => true)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -112,13 +90,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Migrate database on startup
+// Lắng nghe cổng từ biến môi trường của Render
+var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
+app.Urls.Add($"http://*:{port}");
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    Console.WriteLine("=> Running migrations...");
     db.Database.Migrate();
-    Console.WriteLine("=> Migrations completed.");
 }
 
 if (app.Environment.IsDevelopment())
@@ -127,7 +106,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Tắt HttpsRedirection khi chạy trên Render vì Render đã xử lý SSL ở lớp Load Balancer
+if (!app.Environment.IsDevelopment())
+{
+    // app.UseHttpsRedirection();
+}
+
 app.UseCors("FrontendPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
