@@ -17,23 +17,39 @@ builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    // ƯU TIÊN lấy DATABASE_URL từ Render trước, nếu không có mới tìm trong appsettings.json
-    var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
-                 ?? builder.Configuration.GetConnectionString("DefaultConnection");
+    var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    string? connectionString = null;
 
-    if (string.IsNullOrEmpty(rawUrl))
+    if (!string.IsNullOrEmpty(rawUrl))
     {
-        throw new Exception("Could not find database connection string.");
+        Console.WriteLine("=> Found DATABASE_URL in environment.");
+        rawUrl = rawUrl.Trim();
+
+        if (rawUrl.StartsWith("postgres://") || rawUrl.StartsWith("postgresql://"))
+        {
+            try
+            {
+                var uri = new Uri(rawUrl.Replace("postgresql://", "postgres://"));
+                var userInfo = uri.UserInfo.Split(':');
+                connectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.AbsolutePath.TrimStart('/')};SSL Mode=Require;Trust Server Certificate=true";
+                Console.WriteLine("=> Successfully parsed PostgreSQL URI.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"=> Error parsing DATABASE_URL: {ex.Message}");
+            }
+        }
     }
 
-    string connectionString = rawUrl;
-
-    // Chuyển đổi định dạng postgres:// của Render sang định dạng ADO.NET
-    if (rawUrl.StartsWith("postgres://"))
+    if (string.IsNullOrEmpty(connectionString))
     {
-        var uri = new Uri(rawUrl);
-        var userInfo = uri.UserInfo.Split(':');
-        connectionString = $"Host={uri.Host};Port={uri.Port};Username={userInfo[0]};Password={userInfo[1]};Database={uri.AbsolutePath.TrimStart('/')};SSL Mode=Require;Trust Server Certificate=true";
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        Console.WriteLine("=> Using connection string from configuration (appsettings.json).");
+    }
+
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new Exception("No database connection string found!");
     }
 
     options.UseNpgsql(connectionString);
@@ -41,8 +57,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "RestaurantPos.Api";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "RestaurantPos.Web";
-var jwtSecret = builder.Configuration["Jwt__SecretKey"]
-                ?? Environment.GetEnvironmentVariable("Jwt__SecretKey")
+var jwtSecret = Environment.GetEnvironmentVariable("Jwt__SecretKey")
+                ?? builder.Configuration["Jwt:SecretKey"]
                 ?? "VERY_LONG_AND_SECURE_SECRET_KEY_FOR_JWT_TOKEN_123456_CHANGE_ME";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -87,11 +103,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.WithOrigins(
-                builder.Configuration["Frontend:Url"] ?? "http://localhost:5173",
-                "https://do-an-frontend.onrender.com" // Hãy thay bằng URL Static Site của bạn
-            )
-            .SetIsOriginAllowedToAllowWildcardSubdomains()
+        policy.SetIsOriginAllowed(_ => true) // Cho phép tất cả để tránh lỗi CORS khi deploy
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -104,7 +116,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    Console.WriteLine("=> Running migrations...");
     db.Database.Migrate();
+    Console.WriteLine("=> Migrations completed.");
 }
 
 if (app.Environment.IsDevelopment())
