@@ -9,7 +9,6 @@ using RestaurantPos.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Đọc cổng từ Render
 var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
 builder.WebHost.UseUrls($"http://*:{port}");
 
@@ -24,34 +23,22 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
                  ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-    if (string.IsNullOrEmpty(rawUrl)) return;
-
-    string connectionString = rawUrl;
-    if (rawUrl.StartsWith("postgres://") || rawUrl.StartsWith("postgresql://"))
+    if (!string.IsNullOrEmpty(rawUrl))
     {
-        // Sử dụng Uri chuẩn để bóc tách thông tin
-        var databaseUri = new Uri(rawUrl.Replace("postgresql://", "postgres://"));
-        var userInfo = databaseUri.UserInfo.Split(':');
-
-        connectionString = new Npgsql.NpgsqlConnectionStringBuilder
+        string connectionString = rawUrl;
+        if (rawUrl.StartsWith("postgres://") || rawUrl.StartsWith("postgresql://"))
         {
-            Host = databaseUri.Host,
-            Port = databaseUri.Port > 0 ? databaseUri.Port : 5432,
-            Username = userInfo[0],
-            Password = userInfo[1],
-            Database = databaseUri.AbsolutePath.TrimStart('/'),
-            SslMode = Npgsql.SslMode.Require,
-            TrustServerCertificate = true
-        }.ToString();
+            var databaseUri = new Uri(rawUrl.Replace("postgresql://", "postgres://"));
+            var userInfo = databaseUri.UserInfo.Split(':');
+            connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port > 0 ? databaseUri.Port : 5432};Username={userInfo[0]};Password={userInfo[1]};Database={databaseUri.AbsolutePath.TrimStart('/')};SSL Mode=Require;Trust Server Certificate=true";
+        }
+        options.UseNpgsql(connectionString);
     }
-
-    options.UseNpgsql(connectionString);
 });
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "RestaurantPos.Api";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "RestaurantPos.Web";
 var jwtSecret = Environment.GetEnvironmentVariable("Jwt__SecretKey")
-                ?? builder.Configuration["Jwt:SecretKey"]
                 ?? "VERY_LONG_AND_SECURE_SECRET_KEY_FOR_JWT_TOKEN_123456_CHANGE_ME";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -92,20 +79,19 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(AuthPolicies.StaffOrAbove, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner, UserRoles.Manager, UserRoles.Staff));
 });
 
+// Nới lỏng CORS tối đa cho mục đích demo
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.SetIsOriginAllowed(_ => true)
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
 });
 
 var app = builder.Build();
 
-// Migrate DB
 if (!app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
