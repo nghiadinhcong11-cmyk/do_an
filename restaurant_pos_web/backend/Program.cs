@@ -9,6 +9,10 @@ using RestaurantPos.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Đọc cổng từ Render hoặc mặc định là 80
+var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
+builder.WebHost.UseUrls($"http://*:{port}");
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -36,7 +40,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "RestaurantPos.Api";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "RestaurantPos.Web";
 var jwtSecret = Environment.GetEnvironmentVariable("Jwt__SecretKey")
-                ?? builder.Configuration["Jwt:SecretKey"]
                 ?? "VERY_LONG_AND_SECURE_SECRET_KEY_FOR_JWT_TOKEN_123456_CHANGE_ME";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -90,32 +93,17 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Lắng nghe cổng từ biến môi trường của Render
-var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
-app.Urls.Add($"http://*:{port}");
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-// Tắt HttpsRedirection khi chạy trên Render vì Render đã xử lý SSL ở lớp Load Balancer
+// Chỉ chạy Migration trong môi trường Production (Render)
 if (!app.Environment.IsDevelopment())
 {
-    // app.UseHttpsRedirection();
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseCors("FrontendPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapHub<RevenueHub>("/hubs/revenues");
 app.MapHub<TableHub>("/hubs/tables");
