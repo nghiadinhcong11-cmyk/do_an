@@ -1,0 +1,31 @@
+# Mobile (Flutter)
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/generated/
+**/sky_engine/
+.pub-cache/
+.pub/
+
+# Backend (.NET)
+**/bin/
+**/obj/
+**/appsettings.Development.json
+*.user
+*.suo
+*.sln.docstates
+
+# Frontend (React/Vite)
+**/node_modules/
+**/dist/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# System & IDE
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
