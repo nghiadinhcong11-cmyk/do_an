@@ -1,0 +1,259 @@
+﻿import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../core/utils/app_format.dart';
+import '../../database/dao/order_dao.dart';
+import '../../models/order.dart';
+import '../../models/order_item.dart';
+
+class PrintOrderScreen extends StatefulWidget {
+  final String
+      orderId; // Nhận ID Hóa đơn từ màn hình trước truyền sang để tìm trong DB
+
+  const PrintOrderScreen({super.key, required this.orderId});
+
+  @override
+  State<PrintOrderScreen> createState() => _PrintOrderScreenState();
+}
+
+class _PrintOrderScreenState extends State<PrintOrderScreen> {
+  final OrderDao _orderDao = OrderDao();
+  final dateFormat = DateFormat('HH:mm:ss dd/MM/yyyy');
+
+  // Hàm tải đồng thời cả thông tin hóa đơn và danh sách món ăn từ DB
+  Future<Map<String, dynamic>> _loadInvoiceData() async {
+    final order = await _orderDao.getOrderById(widget.orderId);
+    final items = await _orderDao.getOrderItems(widget.orderId);
+    return {
+      'order': order,
+      'items': items,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade300,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('In hóa đơn', style: TextStyle(color: Colors.black)),
+        centerTitle: true,
+      ),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _loadInvoiceData(),
+        builder: (context, snapshot) {
+          // 1. Trạng thái đang đợi DB trả dữ liệu
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+                child: CircularProgressIndicator(color: Colors.green));
+          }
+
+          // 2. Trạng thái lỗi hoặc không có dữ liệu
+          if (snapshot.hasError ||
+              !snapshot.hasData ||
+              snapshot.data!['order'] == null) {
+            return const Center(
+                child:
+                    Text('Không tìm thấy dữ liệu hóa đơn hoặc đã xảy ra lỗi.'));
+          }
+
+          // 3. Đã lấy dữ liệu từ DB thành công -> Gán vào các biến dữ liệu động
+          final OrderModel order = snapshot.data!['order'];
+          final List<OrderItem> items = snapshot.data!['items'];
+
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        // CỐ ĐỊNH: Thông tin tên quán (Có thể config từ Settings DB sau)
+                        const Text('Cà phê Anh Khoa',
+                            style: TextStyle(fontSize: 20)),
+                        const Text('Đường 31, Nghĩa Thành, TP.HCM',
+                            style: TextStyle(fontSize: 13)),
+                        const Text('0346987195',
+                            style: TextStyle(fontSize: 13)),
+                        const SizedBox(height: 10),
+                        _buildDashedDivider(),
+
+                        // ĐỘNG TỪ DB: Chi tiết hóa đơn
+                        _buildTextRow('Hóa đơn:', '#${order.id}'),
+                        _buildTextRow(
+                            'Bàn:',
+                            order.tableId == 'mang_di'
+                                ? 'Đơn bán mang đi'
+                                : 'Bàn ${order.tableId}'),
+                        _buildTextRow(
+                            'Thời gian:', dateFormat.format(order.dateTime)),
+                        _buildDashedDivider(),
+
+                        // ĐỘNG TỪ DB: Thông tin hóa đơn điện tử cơ quan thuế
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                              'Hóa đơn điện tử khởi tạo từ máy tính tiền',
+                              style: TextStyle(fontSize: 13)),
+                        ),
+                        const SizedBox(height: 4),
+                        _buildTextRow('Số HĐ:', order.invoiceNo),
+                        _buildTextRow('Mã tra cứu:', order.lookupCode),
+                        _buildDashedDivider(),
+
+                        // ĐỘNG TỪ DB: Danh sách các món ăn thực tế được gọi
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            final item = items[index];
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('${item.product.name} x${item.quantity}',
+                                      style: const TextStyle(fontSize: 14)),
+                                  Text(
+                                      AppFormat.money(
+                                          item.product.price * item.quantity),
+                                      style: const TextStyle(fontSize: 14)),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        _buildDashedDivider(),
+                        _buildDashedDivider(),
+
+                        // ĐỘNG TỪ DB: Các khoản tiền tổng hợp
+                        _buildTextRow(
+                            'Thành tiền', AppFormat.money(order.subTotal)),
+                        const SizedBox(height: 6),
+                        _buildTextRow(
+                            'VAT (3%)', AppFormat.money(order.vatAmount)),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('TỔNG CỘNG',
+                                style: TextStyle(fontSize: 16)),
+                            Text(AppFormat.money(order.totalAmount),
+                                style: const TextStyle(fontSize: 16)),
+                          ],
+                        ),
+                        _buildDashedDivider(),
+
+                        const SizedBox(height: 10),
+                        const Text('CẢM ƠN QUÝ KHÁCH',
+                            style: TextStyle(fontSize: 15)),
+                        const Text('Hẹn gặp lại!',
+                            style:
+                                TextStyle(fontSize: 13, color: Colors.black54)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Phần nút bấm giữ nguyên cố định ở dưới đáy
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade300,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14))),
+                        onPressed: () {},
+                        icon: const Text('✅'),
+                        label: const Text('Đã xuất hóa đơn điện tử',
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.white)),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14))),
+                        onPressed: () {
+                          // Thực hiện lệnh in Bluetooth với dữ liệu của biến `order` và `items` ở đây
+                        },
+                        icon: const Text('🖨️'),
+                        label: const Text('In hóa đơn (Bluetooth)',
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.white)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTextRow(String leftText, String rightText) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(leftText,
+              style: const TextStyle(fontSize: 13, color: Colors.black87)),
+          Text(rightText, style: const TextStyle(fontSize: 13)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashedDivider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final boxWidth = constraints.constrainWidth();
+          const dashWidth = 4.0;
+          final dashCount = (boxWidth / (2 * dashWidth)).floor();
+          return Flex(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            direction: Axis.horizontal,
+            children: List.generate(
+                dashCount,
+                (_) => const SizedBox(
+                    width: dashWidth,
+                    height: 1,
+                    child: DecoratedBox(
+                        decoration: BoxDecoration(color: Colors.grey)))),
+          );
+        },
+      ),
+    );
+  }
+}

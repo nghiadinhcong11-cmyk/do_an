@@ -30,7 +30,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         {
             var databaseUri = new Uri(rawUrl.Replace("postgresql://", "postgres://"));
             var userInfo = databaseUri.UserInfo.Split(':');
-            connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port > 0 ? databaseUri.Port : 5432};Username={userInfo[0]};Password={userInfo[1]};Database={databaseUri.AbsolutePath.TrimStart('/')};SSL Mode=Require;Trust Server Certificate=true";
+            connectionString = $"Host={databaseUri.Host};Port={(databaseUri.Port > 0 ? databaseUri.Port : 5432)};Username={userInfo[0]};Password={userInfo[1]};Database={databaseUri.AbsolutePath.TrimStart('/')};SSL Mode=Require;Trust Server Certificate=true";
         }
         options.UseNpgsql(connectionString);
     }
