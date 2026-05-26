@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
-import { Package, AlertTriangle, ArrowDown, ArrowUp, Plus } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, Plus } from "lucide-react";
 
 type Ingredient = {
   id: string;

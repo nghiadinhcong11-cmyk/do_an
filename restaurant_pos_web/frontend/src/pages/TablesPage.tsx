@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import api from "../api/client";
-import { RestaurantTable } from "../types";
+import type { RestaurantTable } from "../types";
 
 export default function TablesPage() {
   const [tables, setTables] = useState<RestaurantTable[]>([]);
