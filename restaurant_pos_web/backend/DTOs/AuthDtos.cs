@@ -6,7 +6,8 @@ public record RegisterRequest(
     string? RestaurantId,
     string? RestaurantName,
     string? BranchId,
-    string? Role
+    string? Role,
+    string? AdminCode = null
 );
 
 public record LoginRequest(string Username, string Password);

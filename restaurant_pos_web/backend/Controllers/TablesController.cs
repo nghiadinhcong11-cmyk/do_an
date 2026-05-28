@@ -29,7 +29,7 @@ public class TablesController(AppDbContext dbContext, IHubContext<TableHub> hubC
     }
 
     [HttpPost]
-    [Authorize(Policy = AuthPolicies.ManagerOrAbove)]
+    [Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
     public async Task<ActionResult<RestaurantTable>> Create(RestaurantTable table)
     {
         var restaurantId = User.FindFirstValue("restaurant_id");
@@ -67,7 +67,7 @@ public class TablesController(AppDbContext dbContext, IHubContext<TableHub> hubC
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = AuthPolicies.ManagerOrAbove)]
+    [Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
     public async Task<IActionResult> Delete(string id)
     {
         var restaurantId = User.FindFirstValue("restaurant_id");

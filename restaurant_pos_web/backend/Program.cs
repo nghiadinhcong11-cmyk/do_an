@@ -75,8 +75,8 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthPolicies.AdminOnly, p => p.RequireRole(UserRoles.Admin));
     options.AddPolicy(AuthPolicies.OwnerOrAdmin, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner));
-    options.AddPolicy(AuthPolicies.ManagerOrAbove, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner, UserRoles.Manager));
-    options.AddPolicy(AuthPolicies.StaffOrAbove, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner, UserRoles.Manager, UserRoles.Staff));
+    options.AddPolicy(AuthPolicies.StaffOrAbove, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner, UserRoles.Staff));
+    options.AddPolicy(AuthPolicies.CustomerOrAbove, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner, UserRoles.Staff, UserRoles.Customer));
 });
 
 // Nới lỏng CORS tối đa cho mục đích demo

@@ -13,5 +13,7 @@ public class Product
     public string? Category { get; set; }
     public string? ImageUrl { get; set; }
     public bool IsVisibleToStaff { get; set; } = true;
+    public bool IsAvailable { get; set; } = true;
+    public bool IsBestSeller { get; set; } = false;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 }

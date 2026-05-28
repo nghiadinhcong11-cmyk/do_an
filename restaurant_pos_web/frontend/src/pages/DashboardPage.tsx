@@ -12,7 +12,7 @@ export default function DashboardPage() {
 
   const total = useMemo(() => items.reduce((sum, x) => sum + x.amount, 0), [items]);
   const role = getCurrentRole();
-  const canCreateRevenue = role === "admin" || role === "owner" || role === "manager";
+  const canCreateRevenue = role === "admin" || role === "owner";
 
   useEffect(() => {
     api

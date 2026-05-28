@@ -39,6 +39,7 @@ export default function RegisterPage() {
         restaurantName: finalRestaurantName || null,
         branchId: branchId || null,
         role: finalRole,
+        adminCode: adminCode || null,
       });
       saveAuthSession(data);
       navigate("/");

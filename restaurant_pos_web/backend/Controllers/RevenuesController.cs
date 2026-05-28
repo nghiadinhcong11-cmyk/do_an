@@ -32,7 +32,7 @@ public class RevenuesController(AppDbContext dbContext, IHubContext<RevenueHub> 
             .Include(x => x.CreatedByUser)
             .Where(x => x.RestaurantId == restaurantId);
 
-        if (role is UserRoles.Manager or UserRoles.Staff)
+        if (role is UserRoles.Staff)
         {
             query = query.Where(x => x.BranchId == branchId);
         }
@@ -46,7 +46,7 @@ public class RevenuesController(AppDbContext dbContext, IHubContext<RevenueHub> 
     }
 
     [HttpPost]
-    [Authorize(Policy = AuthPolicies.ManagerOrAbove)]
+    [Authorize(Policy = AuthPolicies.StaffOrAbove)]
     public async Task<ActionResult<RevenueResponse>> Create(CreateRevenueRequest request)
     {
         var userIdRaw = User.FindFirstValue(ClaimTypes.NameIdentifier);

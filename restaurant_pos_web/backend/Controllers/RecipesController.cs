@@ -10,7 +10,7 @@ namespace RestaurantPos.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = AuthPolicies.ManagerOrAbove)]
+[Authorize(Policy = AuthPolicies.StaffOrAbove)]
 public class RecipesController(AppDbContext dbContext) : ControllerBase
 {
     [HttpGet("{productId}")]

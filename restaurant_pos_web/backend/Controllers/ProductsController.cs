@@ -26,7 +26,7 @@ public class ProductsController(AppDbContext dbContext) : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = AuthPolicies.ManagerOrAbove)]
+    [Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
     public async Task<ActionResult<Product>> Create(Product product)
     {
         var restaurantId = User.FindFirstValue("restaurant_id");
@@ -44,7 +44,7 @@ public class ProductsController(AppDbContext dbContext) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Policy = AuthPolicies.ManagerOrAbove)]
+    [Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
     public async Task<IActionResult> Update(string id, Product product)
     {
         var restaurantId = User.FindFirstValue("restaurant_id");
@@ -66,7 +66,7 @@ public class ProductsController(AppDbContext dbContext) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = AuthPolicies.ManagerOrAbove)]
+    [Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
     public async Task<IActionResult> Delete(string id)
     {
         var restaurantId = User.FindFirstValue("restaurant_id");
@@ -81,4 +81,43 @@ public class ProductsController(AppDbContext dbContext) : ControllerBase
         await dbContext.SaveChangesAsync();
         return NoContent();
     }
+
+    [HttpPatch("{id}/availability")]
+    [Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
+    public async Task<IActionResult> UpdateAvailability(string id, [FromBody] UpdateAvailabilityRequest request)
+    {
+        var restaurantId = User.FindFirstValue("restaurant_id");
+        if (string.IsNullOrWhiteSpace(restaurantId)) return Unauthorized();
+
+        var product = await dbContext.Products
+            .FirstOrDefaultAsync(p => p.Id == id && p.RestaurantId == restaurantId);
+
+        if (product == null) return NotFound();
+
+        product.IsAvailable = request.IsAvailable;
+
+        await dbContext.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("{id}/bestseller")]
+    [Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
+    public async Task<IActionResult> UpdateBestSeller(string id, [FromBody] UpdateBestSellerRequest request)
+    {
+        var restaurantId = User.FindFirstValue("restaurant_id");
+        if (string.IsNullOrWhiteSpace(restaurantId)) return Unauthorized();
+
+        var product = await dbContext.Products
+            .FirstOrDefaultAsync(p => p.Id == id && p.RestaurantId == restaurantId);
+
+        if (product == null) return NotFound();
+
+        product.IsBestSeller = request.IsBestSeller;
+
+        await dbContext.SaveChangesAsync();
+        return NoContent();
+    }
 }
+
+public record UpdateAvailabilityRequest(bool IsAvailable);
+public record UpdateBestSellerRequest(bool IsBestSeller);
