@@ -14,7 +14,6 @@ export default function Layout() {
 
   const isOwner = role === "owner" || role === "admin";
   const isCustomer = role === "customer";
-  const isStaff = role === "staff";
   const isApproved = restaurantStatus === "Approved" || role === "admin";
 
   return (
