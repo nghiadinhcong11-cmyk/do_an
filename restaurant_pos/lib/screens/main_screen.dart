@@ -17,6 +17,15 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   List<Widget> _getScreens(AuthProvider auth) {
+    if (auth.isSuperAdmin) {
+      return [
+        const Center(child: Text('Hệ thống Quản trị Tổng (Chỉ dành cho Web)', style: TextStyle(fontSize: 24))),
+        const Center(child: Text('Quản lý danh sách Nhà hàng')),
+        const Center(child: Text('Quản lý người dùng hệ thống')),
+        const Center(child: Text('Cấu hình hệ thống')),
+        const StoreSettingsScreen(),
+      ];
+    }
     if (auth.isOwner) {
       return [
         const HomeScreen(),
@@ -85,6 +94,15 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   List<BottomNavigationBarItem> _buildBottomNavItems(AuthProvider auth) {
+    if (auth.isSuperAdmin) {
+      return const [
+        BottomNavigationBarItem(icon: Icon(Icons.dashboard_customize), label: 'Tổng quan'),
+        BottomNavigationBarItem(icon: Icon(Icons.storefront), label: 'Nhà hàng'),
+        BottomNavigationBarItem(icon: Icon(Icons.people_alt_outlined), label: 'Người dùng'),
+        BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings_outlined), label: 'Hệ thống'),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
+      ];
+    }
     if (auth.isGuest) {
       return const [
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Trang chủ'),

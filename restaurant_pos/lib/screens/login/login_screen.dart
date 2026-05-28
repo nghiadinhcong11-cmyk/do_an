@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart'; // Thêm để kiểm tra kIsWeb
 import '../../providers/auth_provider.dart';
 import '../../providers/table_provider.dart';
 import '../../providers/cart_provider.dart';
@@ -50,8 +51,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final session = await _authApiService.login(username: email, password: password);
-      final userId = '${session.restaurantId}:${session.username}';
+      
+      // Kiểm tra nếu là Admin tổng mà đăng nhập trên App (Mobile)
+      final bool isSystemAdmin = session.role.toLowerCase() == 'admin' || session.role.toLowerCase() == 'superadmin';
+      if (isSystemAdmin && !kIsWeb) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          messenger.showSnackBar(
+            const SnackBar(content: Text('Tài khoản Admin chỉ có thể đăng nhập trên trình duyệt Web'), backgroundColor: Colors.orange),
+          );
+        }
+        return;
+      }
 
+      final userId = '${session.restaurantId}:${session.username}';
       authProvider.loginWithSession(userId: userId, session: session);
       
       tableProvider.initRealtime(
