@@ -110,12 +110,14 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    
     return Scaffold(
       backgroundColor: Colors.grey[50],
       drawer: const AppDrawer(currentRoute: '/menu'),
       appBar: AppBar(
         leading: Builder(builder: (context) => IconButton(icon: const Icon(Icons.menu, color: Colors.black), onPressed: () => Scaffold.of(context).openDrawer())),
-        title: const Text('Quan ly mon an', style: TextStyle(color: Colors.black)),
+        title: const Text('Quản lý thực đơn', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
       ),
       body: FutureBuilder<void>(
@@ -127,26 +129,32 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _showAddProductDialog,
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    label: const Text('Them mon moi', style: TextStyle(color: Colors.white)),
+                if (auth.isOwner)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: _showAddProductDialog,
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      label: const Text('Thêm món mới', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade700,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
+                if (auth.isOwner) const SizedBox(height: 16),
                 Expanded(
                   child: products.isEmpty
-                      ? const Center(child: Text('Chua co mon an nao'))
+                      ? const Center(child: Text('Chưa có món ăn nào'))
                       : ListView.builder(
                           itemCount: products.length,
                           itemBuilder: (context, index) => ProductCard(
                             product: products[index],
-                            onEdit: () {},
-                            onDelete: () => _confirmDelete(products[index]),
-                            onToggleAvailable: (val) => _toggleProductStatus(products[index], 'availability', val),
-                            onToggleBestSeller: (val) => _toggleProductStatus(products[index], 'bestseller', val),
+                            onEdit: auth.isOwner ? () {} : null,
+                            onDelete: auth.isOwner ? () => _confirmDelete(products[index]) : null,
+                            onToggleAvailable: auth.isOwner ? (val) => _toggleProductStatus(products[index], 'availability', val) : null,
+                            onToggleBestSeller: auth.isOwner ? (val) => _toggleProductStatus(products[index], 'bestseller', val) : null,
                           ),
                         ),
                 ),

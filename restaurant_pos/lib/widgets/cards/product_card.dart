@@ -5,16 +5,16 @@ import '../../models/product.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
-  final Function() onEdit;
-  final Function() onDelete;
+  final Function()? onEdit;
+  final Function()? onDelete;
   final Function(bool)? onToggleAvailable;
   final Function(bool)? onToggleBestSeller;
 
   const ProductCard({
     super.key,
     required this.product,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
     this.onToggleAvailable,
     this.onToggleBestSeller,
   });
@@ -100,21 +100,23 @@ class ProductCard extends StatelessWidget {
                   ),
                 ],
                 const Spacer(),
-                _buildActionButton(
-                  label: "Sửa",
-                  icon: Icons.edit,
-                  color: Colors.blue[50]!,
-                  textColor: Colors.blue[700]!,
-                  onTap: onEdit,
-                ),
+                if (onEdit != null)
+                  _buildActionButton(
+                    label: "Sửa",
+                    icon: Icons.edit,
+                    color: Colors.blue[50]!,
+                    textColor: Colors.blue[700]!,
+                    onTap: onEdit!,
+                  ),
                 const SizedBox(width: 8),
-                _buildActionButton(
-                  label: "Xóa",
-                  icon: Icons.delete_outline,
-                  color: Colors.red[50]!,
-                  textColor: Colors.red[700]!,
-                  onTap: onDelete,
-                ),
+                if (onDelete != null)
+                  _buildActionButton(
+                    label: "Xóa",
+                    icon: Icons.delete_outline,
+                    color: Colors.red[50]!,
+                    textColor: Colors.red[700]!,
+                    onTap: onDelete!,
+                  ),
               ],
             ),
           ],

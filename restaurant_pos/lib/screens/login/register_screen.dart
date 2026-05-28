@@ -12,8 +12,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
+  bool _isRegisteringAsOwner = true; // Mặc định là chủ quán
 
-  final _nameController = TextEditingController();
+  final _nameController = TextEditingController(); // Tên nhà hàng hoặc Tên khách hàng
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -57,8 +58,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await _authApiService.register(
         username: email,
         password: password,
-        restaurantName: name,
+        restaurantName: _isRegisteringAsOwner ? name : "CustomerAccount", // Nếu là khách thì gửi tên mặc định hoặc bỏ trống tùy backend
         phone: phone.isNotEmpty ? phone : null,
+        role: _isRegisteringAsOwner ? 'owner' : 'customer',
       );
 
       if (mounted) {
@@ -105,12 +107,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 16),
                 const Text('Tạo tài khoản FokaPOS', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                ToggleButtons(
+                  isSelected: [_isRegisteringAsOwner, !_isRegisteringAsOwner],
+                  onPressed: (index) => setState(() => _isRegisteringAsOwner = index == 0),
+                  borderRadius: BorderRadius.circular(12),
+                  selectedColor: Colors.white,
+                  fillColor: Colors.blue.shade600,
+                  children: const [
+                    Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('Chủ quán')),
+                    Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('Khách hàng')),
+                  ],
+                ),
+                const SizedBox(height: 24),
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(
-                    labelText: 'Tên nhà hàng *',
-                    prefixIcon: const Icon(Icons.storefront_outlined),
+                    labelText: _isRegisteringAsOwner ? 'Tên nhà hàng *' : 'Họ và tên *',
+                    prefixIcon: Icon(_isRegisteringAsOwner ? Icons.storefront_outlined : Icons.person_outline),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),

@@ -178,6 +178,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    // Xử lý vào thẳng với tư cách Khách vãng lai
+                    Provider.of<AuthProvider>(context, listen: false).logout(); // Đảm bảo trạng thái sạch
+                    Navigator.pushReplacementNamed(context, '/home');
+                  },
+                  child: Text('Vào với tư cách Khách vãng lai', style: TextStyle(color: Colors.grey.shade700, decoration: TextDecoration.underline)),
+                ),
                 const SizedBox(height: 40),
               ],
             ),
