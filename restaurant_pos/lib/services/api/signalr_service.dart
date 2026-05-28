@@ -10,6 +10,7 @@ class SignalRService {
 
   Future<void> initTableHub({
     required Function(String tableId, String status) onTableStatusChanged,
+    Function(Map<String, dynamic> request)? onRequestReceived,
   }) async {
     final serverUrl = ApiConfig.baseUrl.replaceAll('/api', '/hubs/tables');
     
@@ -28,8 +29,19 @@ class SignalRService {
       }
     });
 
+    _hubConnection?.on("requestReceived", (List<Object?>? arguments) {
+      if (arguments != null && arguments.isNotEmpty) {
+        final request = arguments[0] as Map<String, dynamic>;
+        onRequestReceived?.call(request);
+      }
+    });
+
     await _hubConnection?.start();
     await _hubConnection?.invoke("JoinRestaurantGroup", args: [_restaurantId]);
+  }
+
+  Future<void> sendRequest(Map<String, dynamic> request) async {
+    await _hubConnection?.invoke("SendRequestToStaff", args: [_restaurantId, request]);
   }
 
   Future<void> stop() async {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 
+import '../../providers/request_provider.dart';
+
 class AppDrawer extends StatelessWidget {
   final String currentRoute;
 
@@ -44,12 +46,23 @@ class AppDrawer extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 children: [
                   _buildDrawerItem(context, 'Trang chủ', '/home', Icons.home_rounded),
+                  _buildDrawerItem(context, 'Yêu cầu của khách', '/requests', Icons.notification_important_rounded, 
+                    badge: context.watch<RequestProvider>().pendingCount > 0 ? context.watch<RequestProvider>().pendingCount.toString() : null),
                   _buildDrawerItem(context, 'Bán hàng (Sơ đồ bàn)', '/table_management', Icons.table_restaurant_rounded),
                   _buildDrawerItem(context, 'Đơn hàng đang mở', '/orders', Icons.receipt_long_rounded),
                   _buildDrawerItem(context, 'Lịch sử thanh toán', '/history', Icons.history_rounded),
-                  const Divider(),
-                  _buildDrawerItem(context, 'Nhập hàng / Chi phí', '/expenses', Icons.account_balance_wallet_rounded),
-                  _buildDrawerItem(context, 'Danh mục món ăn', '/menu', Icons.restaurant_menu_rounded),
+                  
+                  if (auth.isOwner) ...[
+                    const Divider(),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 16, top: 8, bottom: 4),
+                      child: Text('DÀNH CHO CHỦ QUÁN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 0.5)),
+                    ),
+                    _buildDrawerItem(context, 'Thống kê doanh thu', '/statistics', Icons.bar_chart_rounded),
+                    _buildDrawerItem(context, 'Nhập hàng / Chi phí', '/expenses', Icons.account_balance_wallet_rounded),
+                    _buildDrawerItem(context, 'Danh mục món ăn', '/menu', Icons.restaurant_menu_rounded),
+                    _buildDrawerItem(context, 'Cài đặt nhà hàng', '/store-settings', Icons.settings_rounded),
+                  ],
                 ],
               ),
             ),
@@ -79,7 +92,7 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, String title, String routeName, IconData icon) {
+  Widget _buildDrawerItem(BuildContext context, String title, String routeName, IconData icon, {String? badge}) {
     final bool isSelected = currentRoute == routeName;
 
     return Container(
@@ -90,7 +103,18 @@ class AppDrawer extends StatelessWidget {
       ),
       child: ListTile(
         leading: Icon(icon, color: isSelected ? Colors.blue : Colors.black54, size: 22),
-        title: Text(title, style: TextStyle(color: isSelected ? Colors.blue : Colors.black87, fontSize: 14, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+        title: Row(
+          children: [
+            Expanded(child: Text(title, style: TextStyle(color: isSelected ? Colors.blue : Colors.black87, fontSize: 14, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
+            if (badge != null)
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                child: Text(badge, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+              ),
+          ],
+        ),
         onTap: () {
           Navigator.pop(context);
           if (!isSelected) {

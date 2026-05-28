@@ -22,7 +22,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onCreate: _onCreateDB,
       onUpgrade: _onUpgradeDB,
     );
@@ -62,9 +62,71 @@ class DatabaseHelper {
     if (oldVersion < 8) {
       await db.execute('ALTER TABLE orders ADD COLUMN is_synced INTEGER DEFAULT 0');
     }
+    if (oldVersion < 9) {
+      // Add Product enhancement columns
+      await db.execute('ALTER TABLE products ADD COLUMN is_available INTEGER DEFAULT 1');
+      await db.execute('ALTER TABLE products ADD COLUMN is_best_seller INTEGER DEFAULT 0');
+
+      // Add Order Loyalty columns
+      await db.execute('ALTER TABLE orders ADD COLUMN customer_id TEXT');
+      await db.execute('ALTER TABLE orders ADD COLUMN voucher_id TEXT');
+      await db.execute('ALTER TABLE orders ADD COLUMN discount_amount REAL DEFAULT 0.0');
+
+      // Add new tables
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS order_requests (
+          id TEXT PRIMARY KEY,
+          user_id TEXT,
+          table_id TEXT,
+          type TEXT,
+          status TEXT,
+          created_at TEXT,
+          note TEXT
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS order_request_items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          request_id TEXT,
+          product_id TEXT,
+          product_name TEXT,
+          quantity INTEGER,
+          note TEXT,
+          FOREIGN KEY (request_id) REFERENCES order_requests (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS loyalty_customers (
+          id TEXT PRIMARY KEY,
+          user_id TEXT,
+          name TEXT,
+          phone TEXT,
+          points INTEGER DEFAULT 0,
+          rank TEXT DEFAULT "Bronze",
+          total_spent REAL DEFAULT 0.0
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS vouchers (
+          id TEXT PRIMARY KEY,
+          user_id TEXT,
+          code TEXT,
+          title TEXT,
+          discount_value REAL,
+          is_percentage INTEGER DEFAULT 0,
+          min_order_value REAL DEFAULT 0.0,
+          expiry_date TEXT
+        )
+      ''');
+    }
   }
 
   Future<void> _onCreateDB(Database db, int version) async {
+    // ... existing table creation logic ...
+    // Note: It's better to update the original _onCreateDB too for new installs
     await db.execute('''
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,7 +155,9 @@ class DatabaseHelper {
         price REAL NOT NULL,
         cost_price REAL DEFAULT 0.0,
         category TEXT,
-        imageUrl TEXT)
+        imageUrl TEXT,
+        is_available INTEGER DEFAULT 1,
+        is_best_seller INTEGER DEFAULT 0)
     ''');
 
     await db.execute('''
@@ -110,7 +174,10 @@ class DatabaseHelper {
         type TEXT,
         status TEXT,
         item_count INTEGER DEFAULT 0,
-        is_synced INTEGER DEFAULT 0
+        is_synced INTEGER DEFAULT 0,
+        customer_id TEXT,
+        voucher_id TEXT,
+        discount_amount REAL DEFAULT 0.0
       )
     ''');
 
@@ -152,6 +219,55 @@ class DatabaseHelper {
         key TEXT,
         value TEXT,
         PRIMARY KEY (user_id, key)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS order_requests (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        table_id TEXT,
+        type TEXT,
+        status TEXT,
+        created_at TEXT,
+        note TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS order_request_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        request_id TEXT,
+        product_id TEXT,
+        product_name TEXT,
+        quantity INTEGER,
+        note TEXT,
+        FOREIGN KEY (request_id) REFERENCES order_requests (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS loyalty_customers (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        name TEXT,
+        phone TEXT,
+        points INTEGER DEFAULT 0,
+        rank TEXT DEFAULT "Bronze",
+        total_spent REAL DEFAULT 0.0
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS vouchers (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        code TEXT,
+        title TEXT,
+        discount_value REAL,
+        is_percentage INTEGER DEFAULT 0,
+        min_order_value REAL DEFAULT 0.0,
+        expiry_date TEXT
       )
     ''');
   }

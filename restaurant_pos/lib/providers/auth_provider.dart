@@ -20,6 +20,10 @@ class AuthProvider with ChangeNotifier {
   String? get branchId => _branchId;
   bool get isAuthenticated => _userId != null && _token != null;
 
+  bool get isOwner => _role?.toLowerCase() == 'owner';
+  bool get isStaff => _role?.toLowerCase() == 'staff';
+  bool get isGuest => _role?.toLowerCase() == 'guest' || _role?.toLowerCase() == 'customer';
+
   void loginWithSession({required String userId, required AppSession session}) {
     _userId = userId;
     _userName = session.username;

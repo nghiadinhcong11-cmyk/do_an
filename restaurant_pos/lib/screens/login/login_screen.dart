@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/table_provider.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/request_provider.dart';
+import '../../models/order_request.dart';
 import '../../services/api/auth_api_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final tableProvider = Provider.of<TableProvider>(context, listen: false);
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final requestProvider = Provider.of<RequestProvider>(context, listen: false);
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
@@ -50,6 +53,16 @@ class _LoginScreenState extends State<LoginScreen> {
       final userId = '${session.restaurantId}:${session.username}';
 
       authProvider.loginWithSession(userId: userId, session: session);
+      
+      tableProvider.initRealtime(
+        session.token, 
+        session.restaurantId,
+        onRequestReceived: (requestJson) {
+          requestProvider.addRequest(OrderRequest.fromJson(requestJson));
+          // Optionally show a local notification or snackbar
+        },
+      );
+
       await tableProvider.fetchAndSetTables(userId);
       await cartProvider.loadAllCarts(userId);
 

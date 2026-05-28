@@ -23,4 +23,12 @@ class ApiProductService {
   Future<void> deleteProduct(String id) async {
     await _apiClient.delete('/products/$id');
   }
+
+  Future<void> toggleAvailability(String id, bool available) async {
+    await _apiClient.patch('/products/$id/availability', {'isAvailable': available});
+  }
+
+  Future<void> toggleBestSeller(String id, bool bestSeller) async {
+    await _apiClient.patch('/products/$id/bestseller', {'isBestSeller': bestSeller});
+  }
 }

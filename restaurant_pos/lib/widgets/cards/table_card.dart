@@ -5,6 +5,7 @@ import '../../core/utils/app_format.dart';
 import '../../screens/menu/menu_screen.dart';
 import '../../core/enums/table_status.dart';
 import '../../providers/table_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class TableCard extends StatelessWidget {
   final DiningTable table;
@@ -12,6 +13,7 @@ class TableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
     Color statusColor =
         table.status == TableStatus.empty ? Colors.orange : Colors.teal;
 
@@ -70,7 +72,7 @@ class TableCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              _buildButton('Mở Menu', Colors.blue.shade50, Colors.blue, () {
+              _buildButton('Mở Menu / Đặt món', Colors.blue.shade50, Colors.blue, () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -81,28 +83,30 @@ class TableCard extends StatelessWidget {
                   ),
                 );
               }),
-              const SizedBox(width: 12),
-              _buildButton('Sửa', Colors.grey.shade200, Colors.black87, () {}),
-              const SizedBox(width: 12),
-              _buildButton('Xóa', Colors.red.shade50, Colors.red, () {
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Xác nhận xóa'),
-                    content: Text('Bạn có chắc muốn xóa ${table.name}?'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
-                      TextButton(
-                        onPressed: () {
-                          Provider.of<TableProvider>(context, listen: false).deleteTable(table.id);
-                          Navigator.pop(ctx);
-                        }, 
-                        child: const Text('Xóa', style: TextStyle(color: Colors.red))
-                      ),
-                    ],
-                  )
-                );
-              }),
+              if (auth.isOwner) ...[
+                const SizedBox(width: 12),
+                _buildButton('Sửa', Colors.grey.shade200, Colors.black87, () {}),
+                const SizedBox(width: 12),
+                _buildButton('Xóa', Colors.red.shade50, Colors.red, () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Xác nhận xóa'),
+                      content: Text('Bạn có chắc muốn xóa ${table.name}?'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+                        TextButton(
+                          onPressed: () {
+                            Provider.of<TableProvider>(context, listen: false).deleteTable(table.id);
+                            Navigator.pop(ctx);
+                          }, 
+                          child: const Text('Xóa', style: TextStyle(color: Colors.red))
+                        ),
+                      ],
+                    )
+                  );
+                }),
+              ],
             ],
           ),
         ],

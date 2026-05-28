@@ -6,6 +6,8 @@ import '../../providers/product_provider.dart';
 import '../../widgets/cards/product_card.dart';
 import '../../widgets/common/app_drawer.dart';
 
+import '../../services/api/api_product_service.dart';
+
 class ProductManagementScreen extends StatefulWidget {
   const ProductManagementScreen({super.key});
 
@@ -17,6 +19,23 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   Future<void> _refreshProducts() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     await Provider.of<ProductProvider>(context, listen: false).fetchProducts(auth.userId ?? 'admin');
+  }
+
+  void _toggleProductStatus(Product product, String type, bool value) async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final service = ApiProductService(auth.apiClient);
+    try {
+      if (type == 'availability') {
+        await service.toggleAvailability(product.id, value);
+      } else {
+        await service.toggleBestSeller(product.id, value);
+      }
+      _refreshProducts();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      }
+    }
   }
 
   void _showAddProductDialog() {
@@ -126,6 +145,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                             product: products[index],
                             onEdit: () {},
                             onDelete: () => _confirmDelete(products[index]),
+                            onToggleAvailable: (val) => _toggleProductStatus(products[index], 'availability', val),
+                            onToggleBestSeller: (val) => _toggleProductStatus(products[index], 'bestseller', val),
                           ),
                         ),
                 ),

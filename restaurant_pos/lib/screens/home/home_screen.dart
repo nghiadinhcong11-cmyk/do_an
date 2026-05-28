@@ -6,6 +6,9 @@ import '../../core/utils/app_format.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/sync_service.dart';
 
+import '../../providers/request_provider.dart';
+import '../order/request_list_screen.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -37,11 +40,11 @@ class _HomeScreenState extends State<HomeScreen> {
       final syncService = SyncService(auth.apiClient);
       final count = await syncService.syncOrders();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('–? ?ng b? th‡nh cÙng $count ın h‡ng'), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('ƒê√£ ƒë·ªìng b·ªô th√†nh c√¥ng $count ƒë∆°n h√†ng'), backgroundColor: Colors.green));
         _loadDashboardData();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('L?i ?ng b?: $e'), backgroundColor: Colors.red));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('L·ªói ƒë·ªìng b·ªô: $e'), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _isSyncing = false);
     }
@@ -89,6 +92,29 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         title: const Text('FokaPOS', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
         actions: [
+          Consumer<RequestProvider>(
+            builder: (context, provider, child) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none, color: Colors.black87),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RequestListScreen())),
+                  ),
+                  if (provider.pendingCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
+                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        child: Text('${provider.pendingCount}', style: const TextStyle(color: Colors.white, fontSize: 10), textAlign: TextAlign.center),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           if (auth.token != null)
             IconButton(
               icon: _isSyncing 
@@ -109,9 +135,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     _buildStatusCard(auth),
                     const SizedBox(height: 16),
-                    _buildStatRow(),
+                    if (auth.isOwner) _buildStatRow(),
                     const SizedBox(height: 24),
-                    _buildActionGrid(context),
+                    _buildActionGrid(context, auth),
                   ],
                 ),
               ),
@@ -120,12 +146,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildStatusCard(AuthProvider auth) {
+    String roleText = 'Kh√°ch';
+    if (auth.isOwner) roleText = 'Ch·ªß qu√°n';
+    if (auth.isStaff) roleText = 'Nh√¢n vi√™n';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade600,
+        color: auth.isOwner ? Colors.blue.shade600 : (auth.isStaff ? Colors.teal.shade600 : Colors.orange.shade600),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: (auth.isOwner ? Colors.blue : (auth.isStaff ? Colors.teal : Colors.orange)).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Row(
         children: [
@@ -135,8 +165,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(auth.userName ?? 'Nh‚n viÍn', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(auth.token != null ? 'H? th?ng tr?c tuy?n' : 'Ch? ? ngo?i tuy?n', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(auth.userName ?? 'Ng∆∞·ªùi d√πng', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                Text('Vai tr√≤: $roleText', style: const TextStyle(color: Colors.white70, fontSize: 12)),
               ],
             ),
           ),
@@ -144,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(20)),
-              child: Text('$_activeTablesCount b‡n m?', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+              child: Text('$_activeTablesCount b√†n m·ªü', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
             )
         ],
       ),
@@ -154,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildStatRow() {
     return Row(
       children: [
-        _buildSmallStat('–ın h‡ng', '$_todayOrdersCount', Colors.blue),
+        _buildSmallStat('ƒê∆°n h√†ng', '$_todayOrdersCount', Colors.blue),
         const SizedBox(width: 12),
         _buildSmallStat('Doanh thu', AppFormat.money(_todayRevenue), Colors.green),
       ],
@@ -178,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionGrid(BuildContext context) {
+  Widget _buildActionGrid(BuildContext context, AuthProvider auth) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -187,10 +217,15 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisSpacing: 16,
       childAspectRatio: 1.1,
       children: [
-        _buildActionButton(context, 'B·n h‡ng', Icons.grid_view_rounded, Colors.indigo, '/table_management'),
-        _buildActionButton(context, 'HÛa ın', Icons.receipt_long_outlined, Colors.teal, '/orders'),
-        _buildActionButton(context, 'Nh?p kho', Icons.add_shopping_cart_rounded, Colors.orange, '/expenses'),
-        _buildActionButton(context, 'Th?c ın', Icons.restaurant_menu_rounded, Colors.pink, '/menu'),
+        _buildActionButton(context, 'B√°n h√†ng', Icons.grid_view_rounded, Colors.indigo, '/table_management'),
+        _buildActionButton(context, 'H√≥a ƒë∆°n', Icons.receipt_long_outlined, Colors.teal, '/orders'),
+        if (auth.isOwner) ...[
+          _buildActionButton(context, 'Th·ªëng k√™', Icons.bar_chart_rounded, Colors.orange, '/statistics'),
+          _buildActionButton(context, 'Th·ª±c ƒë∆°n', Icons.restaurant_menu_rounded, Colors.pink, '/menu'),
+        ] else ...[
+          _buildActionButton(context, 'L·ªãch s·ª≠', Icons.history_rounded, Colors.orange, '/history'),
+          _buildActionButton(context, 'Nh·∫≠p kho', Icons.add_shopping_cart_rounded, Colors.pink, '/expenses'),
+        ],
       ],
     );
   }

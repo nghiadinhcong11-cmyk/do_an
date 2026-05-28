@@ -18,13 +18,14 @@ class TableProvider with ChangeNotifier {
     _tableService = service;
   }
 
-  void initRealtime(String token, String restaurantId) {
+  void initRealtime(String token, String restaurantId, {Function(Map<String, dynamic>)? onRequestReceived}) {
     _signalRService?.stop();
     _signalRService = SignalRService(token, restaurantId);
     _signalRService!.initTableHub(
       onTableStatusChanged: (tableId, status) {
         _updateLocalTableStatus(tableId, status);
       },
+      onRequestReceived: onRequestReceived,
     );
   }
 

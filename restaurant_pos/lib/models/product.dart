@@ -5,6 +5,8 @@ class Product {
   final double costPrice;
   final String category;
   final String? imageUrl;
+  final bool isAvailable;
+  final bool isBestSeller;
 
   Product({
     required this.id,
@@ -13,6 +15,8 @@ class Product {
     this.costPrice = 0.0,
     this.category = 'Khac',
     this.imageUrl,
+    this.isAvailable = true,
+    this.isBestSeller = false,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -23,6 +27,8 @@ class Product {
       costPrice: (json['costPrice'] as num?)?.toDouble() ?? 0.0,
       category: json['category'] ?? 'Khac',
       imageUrl: json['imageUrl'],
+      isAvailable: json['isAvailable'] ?? json['is_available'] ?? true,
+      isBestSeller: json['isBestSeller'] ?? json['is_best_seller'] ?? false,
     );
   }
 
@@ -34,6 +40,8 @@ class Product {
       'costPrice': costPrice,
       'category': category,
       'imageUrl': imageUrl,
+      'isAvailable': isAvailable,
+      'isBestSeller': isBestSeller,
     };
   }
 

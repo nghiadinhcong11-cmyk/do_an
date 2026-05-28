@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:restaurant_pos/screens/main_screen.dart';
 import 'package:restaurant_pos/screens/login/register_screen.dart';
+import 'package:restaurant_pos/screens/order/request_list_screen.dart';
 import 'package:restaurant_pos/screens/settings/store_settings_screen.dart';
 import 'providers/table_provider.dart';
 import 'providers/cart_provider.dart';
@@ -15,6 +16,7 @@ import 'screens/expenses/expense_screen.dart';
 import 'screens/statistics/statistics_screen.dart';
 import 'screens/history/history_screen.dart';
 import 'providers/auth_provider.dart';
+import 'providers/request_provider.dart';
 import 'providers/product_provider.dart';
 import 'services/api/api_product_service.dart';
 import 'services/api/api_table_service.dart';
@@ -26,6 +28,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => RequestProvider()),
         ProxyProvider<AuthProvider, TableService>(
           update: (_, auth, __) => ApiTableService(auth.apiClient),
         ),
@@ -68,6 +71,7 @@ class MyApp extends StatelessWidget {
         '/history': (context) => const HistoryScreen(),
         '/register': (context) => const RegisterScreen(),
         '/store-settings': (context) => const StoreSettingsScreen(),
+        '/requests': (context) => const RequestListScreen(),
       },
     );
   }

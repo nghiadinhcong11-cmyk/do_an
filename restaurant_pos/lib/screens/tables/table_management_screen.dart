@@ -60,6 +60,7 @@ class _TableManagementScreenState extends State<TableManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final tableProvider = Provider.of<TableProvider>(context);
+    final auth = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
@@ -73,45 +74,59 @@ class _TableManagementScreenState extends State<TableManagementScreen> {
           ),
         ),
         title: const Text(
-          'Quản lý bàn',
+          'Sơ đồ bàn',
           style: TextStyle(
-              color: Colors.black87, fontWeight: FontWeight.w500, fontSize: 20),
+              color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 20),
         ),
       ),
       drawer: const AppDrawer(currentRoute: '/table_management'),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: _showAddTableDialog,
-                icon: const Icon(Icons.add, color: Colors.white),
-                label: const Text('Thêm bàn mới',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  elevation: 1,
+          if (auth.isOwner)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _showAddTableDialog,
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: const Text('Thêm bàn mới',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade700,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 1,
+                  ),
                 ),
               ),
             ),
-          ),
           Expanded(
             child: tableProvider.tables.isEmpty 
-              ? const Center(child: Text('Chưa có bàn nào. Nhấn Thêm bàn để bắt đầu.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  itemCount: tableProvider.tables.length,
-                  itemBuilder: (context, index) {
-                    return TableCard(table: tableProvider.tables[index]);
-                  },
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.table_bar_outlined, size: 64, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      Text(auth.isOwner ? 'Chưa có bàn nào. Hãy thêm bàn để bắt đầu.' : 'Hiện chưa có bàn nào trong hệ thống.', 
+                        style: TextStyle(color: Colors.grey.shade600)),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: () => tableProvider.fetchAndSetTables(),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    itemCount: tableProvider.tables.length,
+                    itemBuilder: (context, index) {
+                      return TableCard(table: tableProvider.tables[index]);
+                    },
+                  ),
                 ),
           ),
         ],

@@ -15,6 +15,9 @@ class OrderModel {
   final int? itemCount;
   final List<OrderItem>? items;
   final bool isSynced;
+  final String? customerId;
+  final String? voucherId;
+  final double discountAmount;
 
   OrderModel({
     this.id,
@@ -30,6 +33,9 @@ class OrderModel {
     this.itemCount,
     this.items,
     this.isSynced = false,
+    this.customerId,
+    this.voucherId,
+    this.discountAmount = 0.0,
   });
 
   DateTime get createdAt => dateTime;
@@ -53,6 +59,9 @@ class OrderModel {
           ? (json['items'] as List).map((i) => OrderItem.fromJson(i, products)).toList()
           : null,
       isSynced: (json['is_synced'] == 1 || json['isSynced'] == true),
+      customerId: json['customerId']?.toString() ?? json['customer_id']?.toString(),
+      voucherId: json['voucherId']?.toString() ?? json['voucher_id']?.toString(),
+      discountAmount: (json['discountAmount'] as num?)?.toDouble() ?? (json['discount_amount'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -71,6 +80,9 @@ class OrderModel {
       'itemCount': itemCount ?? items?.length,
       'items': items?.map((i) => i.toJson()).toList(),
       'is_synced': isSynced ? 1 : 0,
+      'customerId': customerId,
+      'voucherId': voucherId,
+      'discountAmount': discountAmount,
     };
   }
 
