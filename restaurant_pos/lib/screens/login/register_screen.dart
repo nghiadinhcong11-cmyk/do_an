@@ -19,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _adminCodeController = TextEditingController(); // Mã bí mật cho Admin
   final AuthApiService _authApiService = AuthApiService();
 
   @override
@@ -28,6 +29,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _adminCodeController.dispose();
     super.dispose();
   }
 
@@ -37,6 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final phone = _phoneController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
+    final adminCode = _adminCodeController.text.trim();
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -55,12 +58,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Xác định Role: Nếu mã bí mật đúng thì là Admin, còn không thì theo Toggle
+      String roleToRegister = _isRegisteringAsOwner ? 'owner' : 'customer';
+      if (adminCode == 'FOKA@ADMIN') { // MÃ BÍ MẬT Ở ĐÂY
+        roleToRegister = 'admin';
+      }
+
       await _authApiService.register(
         username: email,
         password: password,
-        restaurantName: _isRegisteringAsOwner ? name : "CustomerAccount", // Nếu là khách thì gửi tên mặc định hoặc bỏ trống tùy backend
+        restaurantName: roleToRegister == 'admin' ? "Hệ thống POS" : (_isRegisteringAsOwner ? name : "CustomerAccount"),
         phone: phone.isNotEmpty ? phone : null,
-        role: _isRegisteringAsOwner ? 'owner' : 'customer',
+        role: roleToRegister,
       );
 
       if (mounted) {
@@ -173,6 +182,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       icon: Icon(_obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                       onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                     ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Ô nhập mã Admin (Chỉ hiện trên Web hoặc cho dev biết)
+                TextField(
+                  controller: _adminCodeController,
+                  decoration: InputDecoration(
+                    labelText: 'Mã kích hoạt Admin (nếu có)',
+                    prefixIcon: const Icon(Icons.verified_user_outlined),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
