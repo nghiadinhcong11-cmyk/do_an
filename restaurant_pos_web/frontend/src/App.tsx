@@ -23,18 +23,21 @@ export default function App() {
       {/* Public Routes */}
       <Route path="/menu/:restaurantId" element={<PublicMenuPage />} />
 
-      <Route element={<ProtectedRoute allowedRoles={["admin", "owner", "manager", "staff"]} />}>
+      {/* Protected Routes */}
+      <Route element={<ProtectedRoute allowedRoles={["admin", "owner", "staff", "customer"]} />}>
         <Route element={<Layout />}>
           <Route path="/" element={<DashboardPage />} />
 
-          {/* Owner & Manager Routes */}
-          <Route element={<ProtectedRoute allowedRoles={["admin", "owner", "manager"]} />}>
+          {/* Owner Routes */}
+          <Route element={<ProtectedRoute allowedRoles={["admin", "owner"]} />}>
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/branches" element={<BranchesPage />} />
             <Route path="/tables" element={<TablesPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/staff" element={<StaffPage />} />
           </Route>
+
+          {/* Customer specific routes can be added here */}
 
           {/* System Admin Routes */}
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

@@ -1,4 +1,4 @@
-﻿export type UserRole = "admin" | "owner" | "manager" | "staff";
+﻿export type UserRole = "admin" | "owner" | "staff" | "customer";
 
 export type AuthResponse = {
   token: string;
@@ -27,6 +27,8 @@ export type Product = {
   category: string;
   imageUrl?: string;
   isVisibleToStaff: boolean;
+  isAvailable: boolean;
+  isBestSeller: boolean;
 };
 
 export type Branch = {

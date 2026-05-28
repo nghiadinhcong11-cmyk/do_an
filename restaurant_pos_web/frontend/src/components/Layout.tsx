@@ -13,6 +13,8 @@ export default function Layout() {
   };
 
   const isOwner = role === "owner" || role === "admin";
+  const isCustomer = role === "customer";
+  const isStaff = role === "staff";
   const isApproved = restaurantStatus === "Approved" || role === "admin";
 
   return (
@@ -20,12 +22,15 @@ export default function Layout() {
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col">
         <div className="p-6 text-white font-bold text-xl border-b border-slate-800">
-          FokaPOS Admin
+          FokaPOS
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          <Link to="/" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white">
-            Dashboard
-          </Link>
+          {!isCustomer && (
+            <Link to="/" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white">
+              Dashboard
+            </Link>
+          )}
+
           {isOwner && isApproved && (
             <>
               <Link to="/products" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white">
@@ -45,6 +50,21 @@ export default function Layout() {
               </Link>
             </>
           )}
+
+          {isCustomer && (
+            <>
+              <Link to="/" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white">
+                Thực đơn & Đặt món
+              </Link>
+              <Link to="/history" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white">
+                Lịch sử gọi món
+              </Link>
+              <Link to="/points" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white text-yellow-500">
+                Điểm tích lũy & Ưu đãi
+              </Link>
+            </>
+          )}
+
           {role === "admin" && (
             <Link to="/admin/users" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white text-orange-400">
               Quản trị hệ thống
