@@ -13,8 +13,12 @@ import InventoryPage from "./pages/InventoryPage";
 import SystemAdminPage from "./pages/SystemAdminPage";
 import PublicMenuPage from "./pages/PublicMenuPage";
 import RestaurantProfilePage from "./pages/RestaurantProfilePage";
+import CustomerDashboard from "./pages/CustomerDashboard";
+import { getCurrentRole } from "./api/authStorage";
 
 export default function App() {
+  const role = getCurrentRole();
+
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
@@ -27,7 +31,7 @@ export default function App() {
       {/* Protected Routes */}
       <Route element={<ProtectedRoute allowedRoles={["admin", "owner", "staff", "customer"]} />}>
         <Route element={<Layout />}>
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/" element={role === "customer" ? <CustomerDashboard /> : <DashboardPage />} />
 
           {/* Owner Routes */}
           <Route element={<ProtectedRoute allowedRoles={["admin", "owner"]} />}>

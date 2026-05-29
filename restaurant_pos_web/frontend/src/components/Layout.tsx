@@ -65,13 +65,13 @@ export default function Layout() {
           {isCustomer && (
             <>
               <Link to="/" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white">
-                Thực đơn & Đặt món
+                Trang chủ của bạn
               </Link>
               <Link to="/history" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white">
-                Lịch sử gọi món
+                Lịch sử ăn uống
               </Link>
-              <Link to="/points" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white text-yellow-500">
-                Điểm tích lũy & Ưu đãi
+              <Link to="/vouchers" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white text-orange-400 font-bold">
+                Ưu đãi & Quà tặng
               </Link>
             </>
           )}
