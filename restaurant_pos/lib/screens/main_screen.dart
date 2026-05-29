@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/table_provider.dart';
+import '../providers/request_provider.dart';
+import '../models/order_request.dart';
 import '../widgets/common/app_drawer.dart';
 import 'home/home_screen.dart';
 import 'tables/table_management_screen.dart';
@@ -9,9 +12,6 @@ import 'history/history_screen.dart';
 import 'settings/store_settings_screen.dart';
 import 'settings/profile_screen.dart';
 import 'statistics/statistics_screen.dart';
-
-import '../../providers/request_provider.dart';
-import '../../models/order_request.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
