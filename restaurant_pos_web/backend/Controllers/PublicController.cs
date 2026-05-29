@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RestaurantPos.Api.Data;
 using RestaurantPos.Api.Models;
+using Microsoft.AspNetCore.SignalR;
+using RestaurantPos.Api.Hubs;
 
 namespace RestaurantPos.Api.Controllers;
 
 [ApiController]
 [Route("api/public")]
-public class PublicController(AppDbContext dbContext) : ControllerBase
+public class PublicController(AppDbContext dbContext, IHubContext<TableHub> hubContext) : ControllerBase
 {
     [HttpGet("menu/{restaurantId}")]
     public async Task<ActionResult<object>> GetPublicMenu(string restaurantId)
@@ -19,13 +21,36 @@ public class PublicController(AppDbContext dbContext) : ControllerBase
             return NotFound("Restaurant not found or inactive.");
 
         var products = await dbContext.Products
-            .Where(p => p.RestaurantId == restaurantId && p.IsVisibleToStaff)
+            .Where(p => p.RestaurantId == restaurantId && p.IsVisibleToStaff && p.IsAvailable)
             .OrderBy(p => p.Category)
             .ThenBy(p => p.Name)
-            .Select(p => new { p.Id, p.Name, p.Price, p.Category, p.ImageUrl })
+            .Select(p => new { p.Id, p.Name, p.Price, p.Category, p.ImageUrl, p.IsBestSeller })
             .ToListAsync();
 
         return Ok(new { restaurantName = restaurant.Name, products });
+    }
+
+    [HttpPost("request")]
+    public async Task<IActionResult> CreateRequest([FromBody] OrderRequest request)
+    {
+        if (string.IsNullOrEmpty(request.RestaurantId) || string.IsNullOrEmpty(request.TableId))
+            return BadRequest("Missing required information.");
+
+        if (string.IsNullOrEmpty(request.Id))
+            request.Id = Guid.NewGuid().ToString("N");
+
+        request.CreatedAtUtc = DateTime.UtcNow;
+        request.Status = "pending";
+
+        dbContext.OrderRequests.Add(request);
+        await dbContext.SaveChangesAsync();
+
+        // Notify Staff via SignalR
+        // We use the restaurantId group
+        await hubContext.Clients.Group($"restaurant:{request.RestaurantId}")
+            .SendAsync("requestReceived", request);
+
+        return Ok(request);
     }
 
     [HttpGet("table-info/{tableId}")]
