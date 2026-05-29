@@ -54,23 +54,49 @@ export default function RestaurantProfilePage() {
   if (loading) return <div className="p-8">Đang tải...</div>;
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border p-8 mt-10">
-      <h1 className="text-2xl font-bold mb-2">Thông tin nhà hàng</h1>
-      <p className="text-slate-500 mb-6">Vui lòng hoàn thiện thông tin để Admin có thể phê duyệt quán của bạn.</p>
-
-      {restaurant?.status === 'Pending' && (
-        <div className="bg-yellow-50 text-yellow-700 p-4 rounded-lg mb-6 border border-yellow-200">
-          Trạng thái: <strong>Chờ phê duyệt</strong>. Bạn vẫn có thể cập nhật thông tin bên dưới.
+    <div className="max-w-4xl mx-auto mt-10 space-y-6">
+      <div className="bg-white rounded-2xl shadow-sm border p-8">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Thông tin nhà hàng</h1>
+            <p className="text-slate-500">Quản lý thông tin cơ bản và mã định danh để nhân viên tham gia.</p>
+          </div>
+          <div className="text-right">
+            <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+              restaurant?.status === 'Approved' ? 'bg-green-100 text-green-700' :
+              restaurant?.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+            }`}>
+              {restaurant?.status === 'Approved' ? 'Đã duyệt' : restaurant?.status === 'Rejected' ? 'Từ chối' : 'Chờ phê duyệt'}
+            </span>
+          </div>
         </div>
-      )}
 
-      {restaurant?.status === 'Approved' && (
-        <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-6 border border-green-200">
-          Trạng thái: <strong>Đã được phê duyệt</strong>.
+        {/* Khu vực Mã định danh cho nhân viên */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <p className="text-xs text-slate-500 uppercase font-bold mb-1">Mã nhà hàng (Restaurant ID)</p>
+            <div className="flex items-center justify-between">
+              <code className="text-lg font-mono font-bold text-blue-700">{restaurant?.id}</code>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(restaurant?.id || "");
+                  alert("Đã sao chép mã nhà hàng");
+                }}
+                className="text-xs bg-white border px-2 py-1 rounded hover:bg-slate-100"
+              >
+                Sao chép
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-2 italic">* Cung cấp mã này cho nhân viên để họ đăng ký tài khoản vào quán bạn.</p>
+          </div>
+
+          <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+            <p className="text-xs text-amber-600 uppercase font-bold mb-1">Chủ sở hữu</p>
+            <p className="text-lg font-bold text-slate-800">{restaurant?.ownerId}</p>
+          </div>
         </div>
-      )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">Tên nhà hàng</label>
           <input className="w-full border rounded-lg px-3 py-2" value={name} onChange={(e) => setName(e.target.value)} required />
