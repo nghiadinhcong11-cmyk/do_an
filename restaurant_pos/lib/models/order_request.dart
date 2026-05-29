@@ -24,15 +24,21 @@ class OrderRequest {
 
   factory OrderRequest.fromJson(Map<String, dynamic> json) {
     return OrderRequest(
-      id: json['id']?.toString() ?? '',
-      tableId: json['tableId']?.toString() ?? '',
-      tableName: json['tableName']?.toString() ?? '',
-      type: RequestType.values.firstWhere((e) => e.name == json['type'], orElse: () => RequestType.order),
-      status: RequestStatus.values.firstWhere((e) => e.name == json['status'], orElse: () => RequestStatus.pending),
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      note: json['note'],
-      items: json['items'] != null 
-          ? (json['items'] as List).map((i) => RequestItem.fromJson(i)).toList()
+      id: (json['id'] ?? json['Id'])?.toString() ?? '',
+      tableId: (json['tableId'] ?? json['TableId'])?.toString() ?? '',
+      tableName: (json['tableName'] ?? json['TableName'])?.toString() ?? '',
+      type: RequestType.values.firstWhere(
+        (e) => e.name == (json['type'] ?? json['Type']), 
+        orElse: () => RequestType.order
+      ),
+      status: RequestStatus.values.firstWhere(
+        (e) => e.name == (json['status'] ?? json['Status']), 
+        orElse: () => RequestStatus.pending
+      ),
+      createdAt: DateTime.parse((json['createdAt'] ?? json['CreatedAtUtc'] ?? DateTime.now().toIso8601String())),
+      note: json['note'] ?? json['Note'],
+      items: (json['items'] ?? json['Items']) != null 
+          ? ((json['items'] ?? json['Items']) as List).map((i) => RequestItem.fromJson(i)).toList()
           : null,
     );
   }
@@ -53,10 +59,10 @@ class RequestItem {
 
   factory RequestItem.fromJson(Map<String, dynamic> json) {
     return RequestItem(
-      productId: json['productId']?.toString() ?? '',
-      productName: json['productName']?.toString() ?? '',
-      quantity: json['quantity'] as int? ?? 1,
-      note: json['note'],
+      productId: (json['productId'] ?? json['ProductId'])?.toString() ?? '',
+      productName: (json['productName'] ?? json['ProductName'])?.toString() ?? '',
+      quantity: (json['quantity'] ?? json['Quantity']) as int? ?? 1,
+      note: json['note'] ?? json['Note'],
     );
   }
 }

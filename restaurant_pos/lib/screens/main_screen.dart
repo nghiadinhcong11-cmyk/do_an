@@ -10,6 +10,9 @@ import 'settings/store_settings_screen.dart';
 import 'settings/profile_screen.dart';
 import 'statistics/statistics_screen.dart';
 
+import '../../providers/request_provider.dart';
+import '../../models/order_request.dart';
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -19,6 +22,38 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSignalR();
+  }
+
+  void _initSignalR() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final tableProvider = Provider.of<TableProvider>(context, listen: false);
+      final requestProvider = Provider.of<RequestProvider>(context, listen: false);
+
+      if (auth.token != null && auth.restaurantId != null) {
+        tableProvider.initRealtime(
+          auth.token!,
+          auth.restaurantId!,
+          onRequestReceived: (requestJson) {
+            requestProvider.addRequest(OrderRequest.fromJson(requestJson));
+            // Show a snackbar or sound alert
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('🔔 Có yêu cầu mới từ khách hàng!'),
+                backgroundColor: Colors.blueAccent,
+                duration: Duration(seconds: 5),
+              ),
+            );
+          },
+        );
+      }
+    });
+  }
 
   List<Widget> _getScreens(AuthProvider auth) {
     if (auth.isSuperAdmin) {
