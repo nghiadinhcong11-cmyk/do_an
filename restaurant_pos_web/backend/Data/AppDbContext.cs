@@ -17,6 +17,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<ProductIngredient> ProductIngredients => Set<ProductIngredient>();
     public DbSet<InventoryTransaction> InventoryTransactions => Set<InventoryTransaction>();
+    public DbSet<LoyaltyCustomer> LoyaltyCustomers => Set<LoyaltyCustomer>();
+    public DbSet<Voucher> Vouchers => Set<Voucher>();
+    public DbSet<OrderRequest> OrderRequests => Set<OrderRequest>();
+    public DbSet<OrderRequestItem> OrderRequestItems => Set<OrderRequestItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +70,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(o => o.SubTotal).HasPrecision(18, 2);
             entity.Property(o => o.VatAmount).HasPrecision(18, 2);
             entity.Property(o => o.TotalAmount).HasPrecision(18, 2);
+            entity.Property(o => o.DiscountAmount).HasPrecision(18, 2);
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
@@ -96,6 +101,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             entity.HasIndex(it => it.IngredientId);
             entity.Property(it => it.Quantity).HasPrecision(18, 3);
+        });
+
+        modelBuilder.Entity<LoyaltyCustomer>(entity =>
+        {
+            entity.HasIndex(l => new { l.RestaurantId, l.Phone });
+            entity.Property(l => l.TotalSpent).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<Voucher>(entity =>
+        {
+            entity.HasIndex(v => new { v.RestaurantId, v.Code });
+            entity.Property(v => v.DiscountValue).HasPrecision(18, 2);
+            entity.Property(v => v.MinOrderValue).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<OrderRequest>(entity =>
+        {
+            entity.HasIndex(r => r.RestaurantId);
         });
     }
 }

@@ -18,5 +18,9 @@ public class Order
     public string? Status { get; set; }
     public int ItemCount { get; set; }
 
+    public string? CustomerId { get; set; }
+    public string? VoucherId { get; set; }
+    public decimal DiscountAmount { get; set; }
+
     public List<OrderItem> Items { get; set; } = [];
 }

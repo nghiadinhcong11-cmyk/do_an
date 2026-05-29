@@ -60,6 +60,8 @@ public class ProductsController(AppDbContext dbContext) : ControllerBase
         existing.CostPrice = product.CostPrice;
         existing.Category = product.Category;
         existing.ImageUrl = product.ImageUrl;
+        existing.IsAvailable = product.IsAvailable;
+        existing.IsBestSeller = product.IsBestSeller;
 
         await dbContext.SaveChangesAsync();
         return NoContent();
