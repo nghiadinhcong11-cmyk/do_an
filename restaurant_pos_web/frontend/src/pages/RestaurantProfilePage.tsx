@@ -119,6 +119,7 @@ export default function RestaurantProfilePage() {
           {saving ? "Đang lưu..." : "Lưu thông tin"}
         </button>
       </form>
+      </div>
     </div>
   );
 }

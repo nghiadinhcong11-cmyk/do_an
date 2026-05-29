@@ -17,6 +17,7 @@ public record AuthResponse(
     string Username,
     string Role,
     string RestaurantId,
+    string? RestaurantName,
     string? BranchId,
     string? RestaurantStatus = "Approved"
 );

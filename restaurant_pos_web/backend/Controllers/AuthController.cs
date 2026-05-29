@@ -74,8 +74,9 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
         var token = jwtTokenService.GenerateToken(user);
         var resObj = await dbContext.Restaurants.FindAsync(user.RestaurantId);
         var status = resObj?.Status ?? "Approved";
+        var resName = resObj?.Name;
 
-        return Ok(new AuthResponse(token, user.Username, user.Role, user.RestaurantId, user.BranchId, status));
+        return Ok(new AuthResponse(token, user.Username, user.Role, user.RestaurantId, resName, user.BranchId, status));
     }
 
     [HttpPost("login")]
@@ -91,7 +92,8 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
         var token = jwtTokenService.GenerateToken(user);
         var restaurant = await dbContext.Restaurants.FindAsync(user.RestaurantId);
         var status = restaurant?.Status ?? "Approved";
+        var resName = restaurant?.Name;
 
-        return Ok(new AuthResponse(token, user.Username, user.Role, user.RestaurantId, user.BranchId, status));
+        return Ok(new AuthResponse(token, user.Username, user.Role, user.RestaurantId, resName, user.BranchId, status));
     }
 }

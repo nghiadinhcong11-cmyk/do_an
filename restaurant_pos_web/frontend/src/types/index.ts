@@ -5,6 +5,7 @@ export type AuthResponse = {
   username: string;
   role: UserRole;
   restaurantId: string;
+  restaurantName?: string;
   branchId: string | null;
   restaurantStatus?: string;
 };

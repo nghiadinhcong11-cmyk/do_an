@@ -5,6 +5,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const role = getCurrentRole();
   const username = localStorage.getItem("username");
+  const restaurantName = localStorage.getItem("restaurantName");
   const restaurantStatus = localStorage.getItem("restaurantStatus");
 
   const logout = () => {
@@ -20,8 +21,13 @@ export default function Layout() {
     <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col">
-        <div className="p-6 text-white font-bold text-xl border-b border-slate-800">
-          FokaPOS
+        <div className="p-6 text-white border-b border-slate-800">
+          <div className="font-bold text-xl mb-1">FokaPOS</div>
+          {restaurantName && (
+            <div className="text-xs text-blue-400 font-medium truncate uppercase tracking-wider">
+              {restaurantName}
+            </div>
+          )}
         </div>
         <nav className="flex-1 p-4 space-y-2">
           {!isCustomer && (
