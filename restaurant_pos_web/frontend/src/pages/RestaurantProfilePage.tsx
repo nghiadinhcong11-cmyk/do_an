@@ -8,6 +8,9 @@ type Restaurant = {
   contactPhone?: string;
   status: string;
   ownerId: string;
+  bankCode?: string;
+  bankAccountNumber?: string;
+  bankAccountName?: string;
 };
 
 export default function RestaurantProfilePage() {
@@ -15,6 +18,9 @@ export default function RestaurantProfilePage() {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [bankCode, setBankCode] = useState("");
+  const [bankAccountNumber, setBankAccountNumber] = useState("");
+  const [bankAccountName, setBankAccountName] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -30,6 +36,9 @@ export default function RestaurantProfilePage() {
       setName(res.data.name);
       setAddress(res.data.address || "");
       setPhone(res.data.contactPhone || "");
+      setBankCode(res.data.bankCode || "");
+      setBankAccountNumber(res.data.bankAccountNumber || "");
+      setBankAccountName(res.data.bankAccountName || "");
     } catch {
       setMessage("Không thể tải thông tin nhà hàng.");
     } finally {
@@ -42,7 +51,14 @@ export default function RestaurantProfilePage() {
     setSaving(true);
     setMessage("");
     try {
-      await api.put("/restaurant/update-profile", { name, address, contactPhone: phone });
+      await api.put("/restaurant/update-profile", {
+        name,
+        address,
+        contactPhone: phone,
+        bankCode,
+        bankAccountNumber,
+        bankAccountName
+      });
       setMessage("Cập nhật thành công! Vui lòng chờ Admin phê duyệt.");
       fetchProfile();
     } catch {
@@ -97,29 +113,57 @@ export default function RestaurantProfilePage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Tên nhà hàng</label>
-          <input className="w-full border rounded-lg px-3 py-2" value={name} onChange={(e) => setName(e.target.value)} required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Số điện thoại liên hệ</label>
-          <input className="w-full border rounded-lg px-3 py-2" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Địa chỉ quán</label>
-          <textarea className="w-full border rounded-lg px-3 py-2" rows={3} value={address} onChange={(e) => setAddress(e.target.value)} required />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="font-bold text-lg text-slate-800 border-b pb-2">Thông tin cơ bản</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Tên nhà hàng</label>
+                <input className="w-full border rounded-lg px-3 py-2" value={name} onChange={(e) => setName(e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Số điện thoại liên hệ</label>
+                <input className="w-full border rounded-lg px-3 py-2" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Địa chỉ quán</label>
+              <textarea className="w-full border rounded-lg px-3 py-2" rows={2} value={address} onChange={(e) => setAddress(e.target.value)} required />
+            </div>
+          </div>
 
-        {message && <p className={`text-sm ${message.includes('thành công') ? 'text-green-600' : 'text-red-600'}`}>{message}</p>}
+          <div className="space-y-4">
+            <h3 className="font-bold text-lg text-slate-800 border-b pb-2 flex items-center gap-2">
+              <span className="text-blue-600">🏦</span> Cấu hình thanh toán VietQR
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Mã ngân hàng (Napas)</label>
+                <input className="w-full border rounded-lg px-3 py-2" placeholder="VD: VCB, MB, TCB" value={bankCode} onChange={(e) => setBankCode(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Số tài khoản</label>
+                <input className="w-full border rounded-lg px-3 py-2" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Tên chủ tài khoản</label>
+                <input className="w-full border rounded-lg px-3 py-2" placeholder="KHONG DAU" value={bankAccountName} onChange={(e) => setBankAccountName(e.target.value.toUpperCase())} />
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-400 italic">* Thông tin này dùng để tạo mã QR thanh toán tự động cho khách tại bàn.</p>
+          </div>
 
-        <button
-          disabled={saving}
-          className="bg-slate-900 text-white px-6 py-2 rounded-lg font-medium disabled:opacity-50"
-        >
-          {saving ? "Đang lưu..." : "Lưu thông tin"}
-        </button>
-      </form>
+          {message && <p className={`text-sm ${message.includes('thành công') ? 'text-green-600' : 'text-red-600'}`}>{message}</p>}
+
+          <div className="pt-4">
+            <button
+              disabled={saving}
+              className="w-full md:w-auto bg-slate-900 text-white px-10 py-3 rounded-xl font-bold disabled:opacity-50 shadow-lg active:scale-95 transition-all"
+            >
+              {saving ? "Đang lưu..." : "LƯU TẤT CẢ THÔNG TIN"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -11,6 +11,9 @@ class AuthProvider with ChangeNotifier {
   String? _role;
   String? _restaurantId;
   String? _branchId;
+  String? _bankCode;
+  String? _bankAccountNumber;
+  String? _bankAccountName;
 
   String? get userId => _userId;
   String? get userName => _userName;
@@ -18,6 +21,9 @@ class AuthProvider with ChangeNotifier {
   String? get role => _role;
   String? get restaurantId => _restaurantId;
   String? get branchId => _branchId;
+  String? get bankCode => _bankCode;
+  String? get bankAccountNumber => _bankAccountNumber;
+  String? get bankAccountName => _bankAccountName;
   bool get isAuthenticated => _userId != null && _token != null;
 
   bool get isOwner => _role?.toLowerCase() == 'owner';
@@ -33,6 +39,9 @@ class AuthProvider with ChangeNotifier {
     _role = session.role;
     _restaurantId = session.restaurantId;
     _branchId = session.branchId;
+    _bankCode = session.bankCode;
+    _bankAccountNumber = session.bankAccountNumber;
+    _bankAccountName = session.bankAccountName;
     apiClient.setToken(_token);
     notifyListeners();
   }
@@ -44,6 +53,9 @@ class AuthProvider with ChangeNotifier {
     _role = null;
     _restaurantId = null;
     _branchId = null;
+    _bankCode = null;
+    _bankAccountNumber = null;
+    _bankAccountName = null;
     apiClient.setToken(null);
     notifyListeners();
   }

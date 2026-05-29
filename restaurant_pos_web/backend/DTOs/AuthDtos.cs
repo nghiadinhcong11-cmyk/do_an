@@ -19,7 +19,10 @@ public record AuthResponse(
     string RestaurantId,
     string? RestaurantName,
     string? BranchId,
-    string? RestaurantStatus = "Approved"
+    string? RestaurantStatus = "Approved",
+    string? BankCode = null,
+    string? BankAccountNumber = null,
+    string? BankAccountName = null
 );
 
 public record CreateRevenueRequest(decimal Amount, string Note);

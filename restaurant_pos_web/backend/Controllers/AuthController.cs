@@ -76,7 +76,17 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
         var status = resObj?.Status ?? "Approved";
         var resName = resObj?.Name;
 
-        return Ok(new AuthResponse(token, user.Username, user.Role, user.RestaurantId, resName, user.BranchId, status));
+        return Ok(new AuthResponse(
+            token,
+            user.Username,
+            user.Role,
+            user.RestaurantId,
+            resName,
+            user.BranchId,
+            status,
+            resObj?.BankCode,
+            resObj?.BankAccountNumber,
+            resObj?.BankAccountName));
     }
 
     [HttpPost("login")]
@@ -94,6 +104,16 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
         var status = restaurant?.Status ?? "Approved";
         var resName = restaurant?.Name;
 
-        return Ok(new AuthResponse(token, user.Username, user.Role, user.RestaurantId, resName, user.BranchId, status));
+        return Ok(new AuthResponse(
+            token,
+            user.Username,
+            user.Role,
+            user.RestaurantId,
+            resName,
+            user.BranchId,
+            status,
+            restaurant?.BankCode,
+            restaurant?.BankAccountNumber,
+            restaurant?.BankAccountName));
     }
 }

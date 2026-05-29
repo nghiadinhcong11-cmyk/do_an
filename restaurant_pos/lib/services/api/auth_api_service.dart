@@ -43,6 +43,9 @@ class AuthApiService {
       role: data['role']?.toString() ?? 'staff',
       restaurantId: data['restaurantId']?.toString() ?? '',
       branchId: data['branchId']?.toString().isEmpty == true ? null : data['branchId']?.toString(),
+      bankCode: data['bankCode']?.toString(),
+      bankAccountNumber: data['bankAccountNumber']?.toString(),
+      bankAccountName: data['bankAccountName']?.toString(),
     );
   }
 }

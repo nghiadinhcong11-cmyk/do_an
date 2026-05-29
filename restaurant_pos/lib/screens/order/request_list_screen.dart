@@ -5,6 +5,9 @@ import '../../models/order_request.dart';
 import 'package:intl/intl.dart';
 
 import '../../providers/cart_provider.dart';
+import '../../providers/product_provider.dart';
+import '../../providers/table_provider.dart';
+import '../../core/enums/table_status.dart';
 import '../../models/product.dart';
 
 class RequestListScreen extends StatelessWidget {
@@ -39,33 +42,40 @@ class RequestListScreen extends StatelessWidget {
 
   Future<void> _handleConfirm(BuildContext context, OrderRequest request, RequestProvider provider) async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final productProvider = Provider.of<ProductProvider>(context, listen: false);
+    final tableProvider = Provider.of<TableProvider>(context, listen: false);
     
     // If it's an order request, add items to the table's cart
     if (request.type == RequestType.order && request.items != null) {
       for (var item in request.items!) {
-        // We need a proper Product object, but for now we add what we have
-        await cartProvider.addToCart(request.tableId, Product(
-          id: item.productId,
-          name: item.productName,
-          price: 0, // In real scenario, price would be fetched from ProductProvider
-        ));
-        
-        // If quantity > 1, we might need to handle it. 
-        // Based on CartProvider.addToCart, it increments by 1.
-        for (int i = 1; i < item.quantity; i++) {
-          await cartProvider.addToCart(request.tableId, Product(
+        final realProduct = productProvider.products.firstWhere(
+          (p) => p.id == item.productId,
+          orElse: () => Product(
             id: item.productId,
             name: item.productName,
-            price: 0,
-          ));
+            price: 0, 
+          ),
+        );
+
+        // Add 1st item
+        await cartProvider.addToCart(request.tableId, realProduct);
+        
+        // Add remaining items
+        for (int i = 1; i < item.quantity; i++) {
+          await cartProvider.addToCart(request.tableId, realProduct);
         }
       }
       
+      // Update table status
+      await tableProvider.updateTableStatus(request.tableId, TableStatus.occupied);
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Đã thêm món vào bàn ${request.tableName}')),
         );
       }
+    } else if (request.type == RequestType.payment) {
+      // Handle payment request notification if needed
     }
 
     provider.updateRequestStatus(request.id, RequestStatus.confirmed);

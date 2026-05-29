@@ -8,6 +8,8 @@ import '../../models/order.dart';
 import '../../models/order_item.dart';
 import '../../services/api/api_order_service.dart';
 
+import 'package:qr_flutter/qr_flutter.dart';
+
 class OrderScreen extends StatefulWidget {
   final String tableId;
   final String tableName;
@@ -22,18 +24,24 @@ class _OrderScreenState extends State<OrderScreen> {
   bool _isProcessing = false;
 
   Future<void> _processFinalPayment(CartProvider cartProvider) async {
-    final currentCart = cartProvider.getItemsByTable(widget.tableId);
-    setState(() => _isProcessing = true);
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final totalPrice = cartProvider.getTableTotalPrice(widget.tableId);
 
+    // 1. Show QR Payment Dialog first
+    final bool? confirmed = await _showPaymentQRDialog(auth, totalPrice);
+
+    if (confirmed != true) return;
+
+    setState(() => _isProcessing = true);
     try {
+      final currentCart = cartProvider.getItemsByTable(widget.tableId);
       final orderItems = currentCart
           .map((cartItem) => OrderItem(product: cartItem.product, quantity: cartItem.quantity))
           .toList();
 
       final now = DateTime.now();
-      final subTotal = orderItems.fold<double>(0, (sum, item) => sum + item.total);
-      final vatAmount = subTotal * cartProvider.vatRate;
-      final totalAmount = subTotal + vatAmount;
+      final subTotal = cartProvider.getSubTotalPriceByTable(widget.tableId);
+      final vatAmount = cartProvider.getVatByTable(widget.tableId);
 
       final order = OrderModel(
         tableId: widget.tableId,
@@ -42,19 +50,20 @@ class _OrderScreenState extends State<OrderScreen> {
         lookupCode: 'LKP-${now.microsecondsSinceEpoch}',
         subTotal: subTotal,
         vatAmount: vatAmount,
-        totalAmount: totalAmount,
+        totalAmount: totalPrice,
         type: widget.tableId == 'mang_di' ? 'takeaway' : 'dine_in',
         status: 'paid',
         itemCount: orderItems.fold<int>(0, (sum, item) => sum + item.quantity),
         items: orderItems,
       );
 
-      final auth = Provider.of<AuthProvider>(context, listen: false);
       await ApiOrderService(auth.apiClient).createOrder(order);
 
+      // 2. Clear cart and update table status to EMPTY
       await cartProvider.clearTableCart(widget.tableId);
       if (mounted) {
-        await Provider.of<TableProvider>(context, listen: false).fetchAndSetTables(auth.userId ?? 'admin');
+        await Provider.of<TableProvider>(context, listen: false)
+            .updateTableStatus(widget.tableId, TableStatus.empty);
       }
 
       if (mounted) {
@@ -72,6 +81,68 @@ class _OrderScreenState extends State<OrderScreen> {
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
+  }
+
+  Future<bool?> _showPaymentQRDialog(AuthProvider auth, double amount) {
+    if (auth.bankAccountNumber == null || auth.bankCode == null) {
+      return showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Thiếu thông tin thanh toán'),
+          content: const Text('Chủ quán chưa thiết lập tài khoản ngân hàng trên Web. Vui lòng thanh toán tiền mặt.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Hủy')),
+            ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Đã nhận tiền mặt')),
+          ],
+        ),
+      );
+    }
+
+    // VietQR format: https://vietqr.io/danh-sach-api/api-tao-ma-qr-thanh-toan/
+    final String qrData = '2|99|${auth.bankCode}|${auth.bankAccountNumber}||0|0|${amount.toInt()}|Thanh toan ${widget.tableName}|utf8';
+    // However, the standard is usually a more complex EMVCo string. 
+    // For simplicity, we can use a direct image URL or a standard text format.
+    // Let's use the URL format for QrImageView to be safe
+    final String vietQrUrl = 'https://img.vietqr.io/image/${auth.bankCode}-${auth.bankAccountNumber}-compact.png?amount=${amount.toInt()}&addInfo=Thanh%20toan%20${widget.tableName}&accountName=${auth.bankAccountName}';
+
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Quét mã thanh toán', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: QrImageView(
+                data: vietQrUrl,
+                version: QrVersions.auto,
+                size: 200.0,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(AppFormat.money(amount), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.redAccent)),
+            const SizedBox(height: 8),
+            Text('STK: ${auth.bankAccountNumber}', style: const TextStyle(fontWeight: FontWeight.w500)),
+            Text('Ngân hàng: ${auth.bankCode}', style: const TextStyle(color: Colors.grey)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Quay lại')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Xác nhận đã trả tiền', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

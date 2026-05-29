@@ -13,4 +13,9 @@ public class Restaurant
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public string? ContactPhone { get; set; }
     public string? Address { get; set; }
+
+    // Bank account settings for VietQR
+    public string? BankCode { get; set; }
+    public string? BankAccountNumber { get; set; }
+    public string? BankAccountName { get; set; }
 }

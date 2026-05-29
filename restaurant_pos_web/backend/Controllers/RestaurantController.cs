@@ -37,10 +37,20 @@ public class RestaurantController(AppDbContext dbContext) : ControllerBase
         restaurant.Name = request.Name.Trim();
         restaurant.ContactPhone = request.ContactPhone?.Trim();
         restaurant.Address = request.Address?.Trim();
+        restaurant.BankCode = request.BankCode?.Trim();
+        restaurant.BankAccountNumber = request.BankAccountNumber?.Trim();
+        restaurant.BankAccountName = request.BankAccountName?.Trim();
 
         await dbContext.SaveChangesAsync();
         return Ok(restaurant);
     }
 }
 
-public record UpdateRestaurantProfileRequest(string Name, string? ContactPhone, string? Address);
+public record UpdateRestaurantProfileRequest(
+    string Name,
+    string? ContactPhone,
+    string? Address,
+    string? BankCode,
+    string? BankAccountNumber,
+    string? BankAccountName
+);
