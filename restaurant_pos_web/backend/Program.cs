@@ -76,7 +76,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(AuthPolicies.AdminOnly, p => p.RequireRole(UserRoles.Admin));
     options.AddPolicy(AuthPolicies.OwnerOrAdmin, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner));
     options.AddPolicy(AuthPolicies.StaffOrAbove, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner, UserRoles.Staff));
-    options.AddPolicy(AuthPolicies.CustomerOrAbove, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner, UserRoles.Staff, UserRoles.Customer));
 });
 
 // Nới lỏng CORS tối đa cho mục đích demo
@@ -84,7 +83,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("https://do-an-1-54a3.onrender.com")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });

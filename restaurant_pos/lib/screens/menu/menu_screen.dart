@@ -19,7 +19,8 @@ class MenuScreen extends StatefulWidget {
   State<MenuScreen> createState() => _MenuScreenState();
 }
 
-class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateMixin {
+class _MenuScreenState extends State<MenuScreen>
+    with SingleTickerProviderStateMixin {
   TabController? _tabController;
   List<Product> _allProducts = [];
   List<Product> _filteredProducts = [];
@@ -34,7 +35,8 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
   }
 
   Future<void> _loadData() async {
-    final productProvider = Provider.of<ProductProvider>(context, listen: false);
+    final productProvider =
+        Provider.of<ProductProvider>(context, listen: false);
     final auth = Provider.of<AuthProvider>(context, listen: false);
     await productProvider.fetchProducts(auth.userId ?? 'admin');
 
@@ -64,7 +66,9 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
       if (query.isEmpty) {
         _filteredProducts = _allProducts;
       } else {
-        _filteredProducts = _allProducts.where((p) => p.name.toLowerCase().contains(query.toLowerCase())).toList();
+        _filteredProducts = _allProducts
+            .where((p) => p.name.toLowerCase().contains(query.toLowerCase()))
+            .toList();
       }
     });
   }
@@ -93,11 +97,14 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
                 child: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       child: TextField(
                         controller: _searchController,
                         onChanged: _filterSearch,
-                        decoration: const InputDecoration(hintText: 'Tim mon nhanh...', prefixIcon: Icon(Icons.search)),
+                        decoration: const InputDecoration(
+                            hintText: 'Tim mon nhanh...',
+                            prefixIcon: Icon(Icons.search)),
                       ),
                     ),
                     TabBar(
@@ -115,7 +122,8 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
               ? _buildMenuGrid('')
               : TabBarView(
                   controller: _tabController,
-                  children: _categories.map((cat) => _buildMenuGrid(cat)).toList(),
+                  children:
+                      _categories.map((cat) => _buildMenuGrid(cat)).toList(),
                 ),
       bottomNavigationBar: totalItems > 0
           ? SafeArea(
@@ -129,11 +137,18 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('$totalItems mon trong gio hang'),
-                        Text(AppFormat.money(totalPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text(AppFormat.money(totalPrice),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                     ElevatedButton(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => OrderScreen(tableId: widget.tableId, tableName: widget.tableName))),
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => OrderScreen(
+                                  tableId: widget.tableId,
+                                  tableName: widget.tableName))),
                       child: const Text('Xem gio hang'),
                     ),
                   ],
@@ -145,7 +160,9 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildMenuGrid(String category) {
-    final filteredProducts = category.isEmpty ? _filteredProducts : _filteredProducts.where((p) => p.category == category).toList();
+    final filteredProducts = category.isEmpty
+        ? _filteredProducts
+        : _filteredProducts.where((p) => p.category == category).toList();
     if (filteredProducts.isEmpty) {
       return const Center(child: Text('Khong co mon nao trong danh muc nay'));
     }
@@ -153,11 +170,10 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, 
-        crossAxisSpacing: 16, 
-        mainAxisSpacing: 16, 
-        childAspectRatio: 0.72
-      ),
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 0.72),
       itemCount: filteredProducts.length,
       itemBuilder: (context, index) {
         final product = filteredProducts[index];
@@ -167,7 +183,9 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
           opacity: isAvailable ? 1.0 : 0.6,
           child: Card(
             elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.grey.shade200)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -176,25 +194,42 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.blue.shade50,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
                     ),
                     child: Stack(
                       children: [
-                        const Center(child: Icon(Icons.restaurant, size: 40, color: Colors.blue)),
+                        const Center(
+                            child: Icon(Icons.restaurant,
+                                size: 40, color: Colors.blue)),
                         if (product.isBestSeller)
                           Positioned(
                             top: 8,
                             left: 8,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(color: Colors.amber, borderRadius: BorderRadius.circular(8)),
-                              child: const Text('BÁN CHẠY', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                  color: Colors.amber,
+                                  borderRadius: BorderRadius.circular(8)),
+                              child: const Text('BÁN CHẠY',
+                                  style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
                             ),
                           ),
                         if (!isAvailable)
                           Container(
-                            decoration: BoxDecoration(color: Colors.black45, borderRadius: const BorderRadius.vertical(top: Radius.circular(16))),
-                            child: const Center(child: Text('HẾT MÓN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                            decoration: const BoxDecoration(
+                                color: Colors.black45,
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(16))),
+                            child: const Center(
+                                child: Text('HẾT MÓN',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold))),
                           ),
                       ],
                     ),
@@ -205,31 +240,48 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(product.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15)),
                       const SizedBox(height: 4),
-                      Text(AppFormat.money(product.price), style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.bold)),
+                      Text(AppFormat.money(product.price),
+                          style: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
                         height: 36,
                         child: ElevatedButton(
-                          onPressed: !isAvailable ? null : () {
-                            Provider.of<CartProvider>(context, listen: false).addToCart(widget.tableId, product);
-                            Provider.of<TableProvider>(context, listen: false).updateTableStatus(widget.tableId, TableStatus.occupied);
-                            ScaffoldMessenger.of(context).clearSnackBars();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Đã thêm ${product.name} vào giỏ'), 
-                                duration: const Duration(seconds: 1),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
+                          onPressed: !isAvailable
+                              ? null
+                              : () {
+                                  Provider.of<CartProvider>(context,
+                                          listen: false)
+                                      .addToCart(widget.tableId, product);
+                                  Provider.of<TableProvider>(context,
+                                          listen: false)
+                                      .updateTableStatus(
+                                          widget.tableId, TableStatus.occupied);
+                                  ScaffoldMessenger.of(context)
+                                      .clearSnackBars();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Đã thêm ${product.name} vào giỏ'),
+                                      duration: const Duration(seconds: 1),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue.shade600,
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                             elevation: 0,
                           ),
                           child: const Icon(Icons.add_shopping_cart, size: 18),

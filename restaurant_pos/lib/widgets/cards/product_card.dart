@@ -34,25 +34,29 @@ class ProductCard extends StatelessWidget {
                 // Hiển thị ảnh sản phẩm
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: product.imagePath != null && product.imagePath!.isNotEmpty
-                      ? Image.file(
-                          File(product.imagePath!),
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            width: 80,
-                            height: 80,
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.broken_image, color: Colors.grey),
-                          ),
-                        )
-                      : Container(
-                          width: 80,
-                          height: 80,
-                          color: Colors.blue[50],
-                          child: Icon(Icons.restaurant, color: Colors.blue[200], size: 30),
-                        ),
+                  child:
+                      product.imagePath != null && product.imagePath!.isNotEmpty
+                          ? Image.file(
+                              File(product.imagePath!),
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                width: 80,
+                                height: 80,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.broken_image,
+                                    color: Colors.grey),
+                              ),
+                            )
+                          : Container(
+                              width: 80,
+                              height: 80,
+                              color: Colors.blue[50],
+                              child: Icon(Icons.restaurant,
+                                  color: Colors.blue[200], size: 30),
+                            ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -64,17 +68,20 @@ class ProductCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               product.name,
-                              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.bold),
                             ),
                           ),
                           if (product.isBestSeller)
-                            const Icon(Icons.star, color: Colors.amber, size: 20),
+                            const Icon(Icons.star,
+                                color: Colors.amber, size: 20),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Giá bán: ${AppFormat.money(product.price)}',
-                        style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                            color: Colors.green, fontWeight: FontWeight.w500),
                       ),
                       Text(
                         'Phân loại: ${product.category}',
@@ -95,7 +102,7 @@ class ProductCard extends StatelessWidget {
                     child: Switch(
                       value: product.isAvailable,
                       onChanged: onToggleAvailable,
-                      activeColor: Colors.green,
+                      activeThumbColor: Colors.green,
                     ),
                   ),
                 ],
@@ -145,7 +152,11 @@ class ProductCard extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: textColor),
             const SizedBox(width: 4),
-            Text(label, style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(label,
+                style: TextStyle(
+                    color: textColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
       ),

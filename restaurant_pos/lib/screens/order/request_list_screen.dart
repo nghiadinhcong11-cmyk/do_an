@@ -40,11 +40,13 @@ class RequestListScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _handleConfirm(BuildContext context, OrderRequest request, RequestProvider provider) async {
+  Future<void> _handleConfirm(BuildContext context, OrderRequest request,
+      RequestProvider provider) async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    final productProvider = Provider.of<ProductProvider>(context, listen: false);
+    final productProvider =
+        Provider.of<ProductProvider>(context, listen: false);
     final tableProvider = Provider.of<TableProvider>(context, listen: false);
-    
+
     // If it's an order request, add items to the table's cart
     if (request.type == RequestType.order && request.items != null) {
       for (var item in request.items!) {
@@ -53,21 +55,22 @@ class RequestListScreen extends StatelessWidget {
           orElse: () => Product(
             id: item.productId,
             name: item.productName,
-            price: 0, 
+            price: 0,
           ),
         );
 
         // Add 1st item
         await cartProvider.addToCart(request.tableId, realProduct);
-        
+
         // Add remaining items
         for (int i = 1; i < item.quantity; i++) {
           await cartProvider.addToCart(request.tableId, realProduct);
         }
       }
-      
+
       // Update table status
-      await tableProvider.updateTableStatus(request.tableId, TableStatus.occupied);
+      await tableProvider.updateTableStatus(
+          request.tableId, TableStatus.occupied);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -81,7 +84,8 @@ class RequestListScreen extends StatelessWidget {
     provider.updateRequestStatus(request.id, RequestStatus.confirmed);
   }
 
-  Widget _buildRequestCard(BuildContext context, OrderRequest request, RequestProvider provider) {
+  Widget _buildRequestCard(
+      BuildContext context, OrderRequest request, RequestProvider provider) {
     Color typeColor = Colors.blue;
     String typeText = 'Gọi món';
     if (request.type == RequestType.callStaff) {
@@ -104,38 +108,53 @@ class RequestListScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(color: typeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-                  child: Text(typeText, style: TextStyle(color: typeColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                      color: typeColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20)),
+                  child: Text(typeText,
+                      style: TextStyle(
+                          color: typeColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12)),
                 ),
-                Text(DateFormat('HH:mm').format(request.createdAt), style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(DateFormat('HH:mm').format(request.createdAt),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12)),
               ],
             ),
             const SizedBox(height: 12),
-            Text('Bàn: ${request.tableName}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Bàn: ${request.tableName}',
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             if (request.items != null && request.items!.isNotEmpty) ...[
               const SizedBox(height: 8),
               const Divider(),
               ...request.items!.map((item) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Row(
-                  children: [
-                    Text('${item.quantity}x ', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Expanded(child: Text(item.productName)),
-                  ],
-                ),
-              )),
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: [
+                        Text('${item.quantity}x ',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                        Expanded(child: Text(item.productName)),
+                      ],
+                    ),
+                  )),
             ],
             if (request.note != null && request.note!.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('Ghi chú: ${request.note}', style: const TextStyle(fontStyle: FontStyle.italic, color: Colors.grey)),
+              Text('Ghi chú: ${request.note}',
+                  style: const TextStyle(
+                      fontStyle: FontStyle.italic, color: Colors.grey)),
             ],
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => provider.updateRequestStatus(request.id, RequestStatus.cancelled),
+                    onPressed: () => provider.updateRequestStatus(
+                        request.id, RequestStatus.cancelled),
                     child: const Text('Từ chối'),
                   ),
                 ),
@@ -143,8 +162,10 @@ class RequestListScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _handleConfirm(context, request, provider),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                    child: const Text('Xác nhận', style: TextStyle(color: Colors.white)),
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                    child: const Text('Xác nhận',
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],

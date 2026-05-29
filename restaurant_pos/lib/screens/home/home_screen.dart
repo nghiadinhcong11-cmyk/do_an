@@ -40,11 +40,15 @@ class _HomeScreenState extends State<HomeScreen> {
       final syncService = SyncService(auth.apiClient);
       final count = await syncService.syncOrders();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Đã đồng bộ thành công $count đơn hàng'), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Đã đồng bộ thành công $count đơn hàng'),
+            backgroundColor: Colors.green));
         _loadDashboardData();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi đồng bộ: $e'), backgroundColor: Colors.red));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Lỗi đồng bộ: $e'), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _isSyncing = false);
     }
@@ -84,21 +88,27 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-    
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('FokaPOS', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+        title: const Text('FokaPOS',
+            style:
+                TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
         actions: [
           Consumer<RequestProvider>(
             builder: (context, provider, child) {
               return Stack(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.notifications_none, color: Colors.black87),
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RequestListScreen())),
+                    icon: const Icon(Icons.notifications_none,
+                        color: Colors.black87),
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const RequestListScreen())),
                   ),
                   if (provider.pendingCount > 0)
                     Positioned(
@@ -106,9 +116,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       top: 8,
                       child: Container(
                         padding: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
-                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                        child: Text('${provider.pendingCount}', style: const TextStyle(color: Colors.white, fontSize: 10), textAlign: TextAlign.center),
+                        decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10)),
+                        constraints:
+                            const BoxConstraints(minWidth: 16, minHeight: 16),
+                        child: Text('${provider.pendingCount}',
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 10),
+                            textAlign: TextAlign.center),
                       ),
                     ),
                 ],
@@ -117,9 +133,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           if (auth.token != null)
             IconButton(
-              icon: _isSyncing 
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.cloud_upload_outlined, color: Colors.blue),
+              icon: _isSyncing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.cloud_upload_outlined, color: Colors.blue),
               onPressed: _isSyncing ? null : _handleSync,
             ),
         ],
@@ -153,28 +172,52 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: auth.isOwner ? Colors.blue.shade600 : (auth.isStaff ? Colors.teal.shade600 : Colors.orange.shade600),
+        color: auth.isOwner
+            ? Colors.blue.shade600
+            : (auth.isStaff ? Colors.teal.shade600 : Colors.orange.shade600),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: (auth.isOwner ? Colors.blue : (auth.isStaff ? Colors.teal : Colors.orange)).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+              color: (auth.isOwner
+                      ? Colors.blue
+                      : (auth.isStaff ? Colors.teal : Colors.orange))
+                  .withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4))
+        ],
       ),
       child: Row(
         children: [
-          const CircleAvatar(backgroundColor: Colors.white24, child: Icon(Icons.person, color: Colors.white)),
+          const CircleAvatar(
+              backgroundColor: Colors.white24,
+              child: Icon(Icons.person, color: Colors.white)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(auth.userName ?? 'Người dùng', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('Vai trò: $roleText', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(auth.userName ?? 'Người dùng',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16)),
+                Text('Vai trò: $roleText',
+                    style:
+                        const TextStyle(color: Colors.white70, fontSize: 12)),
               ],
             ),
           ),
           if (_activeTablesCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(20)),
-              child: Text('$_activeTablesCount bàn mở', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+              decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(20)),
+              child: Text('$_activeTablesCount bàn mở',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold)),
             )
         ],
       ),
@@ -186,7 +229,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         _buildSmallStat('Đơn hàng', '$_todayOrdersCount', Colors.blue),
         const SizedBox(width: 12),
-        _buildSmallStat('Doanh thu', AppFormat.money(_todayRevenue), Colors.green),
+        _buildSmallStat(
+            'Doanh thu', AppFormat.money(_todayRevenue), Colors.green),
       ],
     );
   }
@@ -195,13 +239,19 @@ class _HomeScreenState extends State<HomeScreen> {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.black12)),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.black12)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            Text(title,
+                style: const TextStyle(color: Colors.grey, fontSize: 12)),
             const SizedBox(height: 4),
-            Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(value,
+                style: TextStyle(
+                    color: color, fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -217,30 +267,43 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisSpacing: 16,
       childAspectRatio: 1.1,
       children: [
-        _buildActionButton(context, 'Bán hàng', Icons.grid_view_rounded, Colors.indigo, '/table_management'),
-        _buildActionButton(context, 'Hóa đơn', Icons.receipt_long_outlined, Colors.teal, '/orders'),
+        _buildActionButton(context, 'Bán hàng', Icons.grid_view_rounded,
+            Colors.indigo, '/table_management'),
+        _buildActionButton(context, 'Hóa đơn', Icons.receipt_long_outlined,
+            Colors.teal, '/orders'),
         if (auth.isOwner) ...[
-          _buildActionButton(context, 'Thống kê', Icons.bar_chart_rounded, Colors.orange, '/statistics'),
-          _buildActionButton(context, 'Thực đơn', Icons.restaurant_menu_rounded, Colors.pink, '/menu'),
+          _buildActionButton(context, 'Thống kê', Icons.bar_chart_rounded,
+              Colors.orange, '/statistics'),
+          _buildActionButton(context, 'Thực đơn', Icons.restaurant_menu_rounded,
+              Colors.pink, '/menu'),
         ] else ...[
-          _buildActionButton(context, 'Lịch sử', Icons.history_rounded, Colors.orange, '/history'),
-          _buildActionButton(context, 'Nhập kho', Icons.add_shopping_cart_rounded, Colors.pink, '/expenses'),
+          _buildActionButton(context, 'Lịch sử', Icons.history_rounded,
+              Colors.orange, '/history'),
+          _buildActionButton(context, 'Nhập kho',
+              Icons.add_shopping_cart_rounded, Colors.pink, '/expenses'),
         ],
       ],
     );
   }
 
-  Widget _buildActionButton(BuildContext context, String label, IconData icon, Color color, String route) {
+  Widget _buildActionButton(BuildContext context, String label, IconData icon,
+      Color color, String route) {
     return InkWell(
-      onTap: () => Navigator.pushNamed(context, route).then((_) => _loadDashboardData()),
+      onTap: () =>
+          Navigator.pushNamed(context, route).then((_) => _loadDashboardData()),
       child: Container(
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.black12)),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.black12)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: color, size: 32),
             const SizedBox(height: 12),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            Text(label,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           ],
         ),
       ),

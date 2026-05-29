@@ -3,27 +3,26 @@
 ## Roles
 - `admin`: quan tri he thong
 - `owner`: chu quan
-- `manager`: quan ly van hanh
 - `staff`: nhan vien ban hang
+- `customer`: khach hang
 
 ## Platform scope
-- Web: `admin`, `owner` (co the mo rong cho `manager`)
-- Mobile: `owner`, `manager`, `staff`
+- Web: `admin`, `owner`
+- Mobile: `owner`, `staff`
 
 ## Permission matrix
-| Feature | admin | owner | manager | staff |
-|---|---|---|---|---|
-| Quan tri users toan he thong | Yes | No | No | No |
-| Xem doanh thu toan chuoi trong 1 restaurant | Yes | Yes | No | No |
-| Xem doanh thu theo chi nhanh | Yes | Yes | Yes | Yes |
-| Tao doanh thu | Yes | Yes | Yes | No |
-| Cau hinh quan/chi nhanh | Yes | Yes | Yes (branch scope) | No |
+| Feature | admin | owner | staff |
+|---|---|---|---|
+| Quan tri users toan he thong | Yes | No | No |
+| Xem doanh thu toan chuoi trong 1 restaurant | Yes | Yes | No |
+| Xem doanh thu theo chi nhanh | Yes | Yes | Yes |
+| Tao doanh thu | Yes | Yes | No |
+| Cau hinh quan/chi nhanh | Yes | Yes | No |
 
 ## Current policy mapping in code
 - `AdminOnly`: admin
 - `OwnerOrAdmin`: admin, owner
-- `ManagerOrAbove`: admin, owner, manager
-- `StaffOrAbove`: admin, owner, manager, staff
+- `StaffOrAbove`: admin, owner, staff
 
 ## Tenant isolation rules
 - Moi JWT co `restaurant_id` va `branch_id`
