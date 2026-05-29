@@ -177,31 +177,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: OutlinedButton.icon(
-                    onPressed: () => Navigator.pushNamed(context, '/register'),
-                    icon: const Icon(Icons.person_add_alt_1_outlined),
-                    label: const Text('Tạo tài khoản mới', style: TextStyle(fontSize: 16)),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.blue.shade600),
-                      foregroundColor: Colors.blue.shade600,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
                 TextButton(
                   onPressed: () {
                     // Xử lý vào thẳng với tư cách Khách vãng lai
                     Provider.of<AuthProvider>(context, listen: false).logout(); // Đảm bảo trạng thái sạch
                     Navigator.pushReplacementNamed(context, '/home');
                   },
-                  child: Text('Vào với tư cách Khách vãng lai', style: TextStyle(color: Colors.grey.shade700, decoration: TextDecoration.underline)),
+                  child: Text('Vào với tư cách Khách vãng lai', style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    'Để đăng ký tài khoản mới, vui lòng truy cập website quản trị của chúng tôi.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontStyle: FontStyle.italic),
+                  ),
                 ),
                 const SizedBox(height: 40),
-              ],
+             ],
             ),
           ),
         ),

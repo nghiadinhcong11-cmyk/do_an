@@ -22,7 +22,9 @@ class AuthProvider with ChangeNotifier {
 
   bool get isOwner => _role?.toLowerCase() == 'owner';
   bool get isStaff => _role?.toLowerCase() == 'staff';
-  bool get isGuest => _role?.toLowerCase() == 'guest' || _role?.toLowerCase() == 'customer';
+  bool get isCustomer => _role?.toLowerCase() == 'customer';
+  bool get isGuest => _userId == null || _role?.toLowerCase() == 'guest';
+  bool get isSuperAdmin => _role?.toLowerCase() == 'admin' || _role?.toLowerCase() == 'superadmin';
 
   void loginWithSession({required String userId, required AppSession session}) {
     _userId = userId;
