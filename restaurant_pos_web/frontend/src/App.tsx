@@ -12,6 +12,7 @@ import BranchesPage from "./pages/BranchesPage";
 import InventoryPage from "./pages/InventoryPage";
 import SystemAdminPage from "./pages/SystemAdminPage";
 import PublicMenuPage from "./pages/PublicMenuPage";
+import RestaurantProfilePage from "./pages/RestaurantProfilePage";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/tables" element={<TablesPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/staff" element={<StaffPage />} />
+            <Route path="/restaurant-profile" element={<RestaurantProfilePage />} />
           </Route>
 
           {/* Customer specific routes can be added here */}

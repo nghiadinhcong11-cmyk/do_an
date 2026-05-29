@@ -30,6 +30,12 @@ export default function Layout() {
             </Link>
           )}
 
+          {isOwner && (
+            <Link to="/restaurant-profile" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white">
+              Hồ sơ nhà hàng
+            </Link>
+          )}
+
           {isOwner && isApproved && (
             <>
               <Link to="/products" className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white">
