@@ -44,11 +44,21 @@ class RequestListScreen extends StatelessWidget {
     if (request.type == RequestType.order && request.items != null) {
       for (var item in request.items!) {
         // We need a proper Product object, but for now we add what we have
-        await cartProvider.addItem(request.tableId, Product(
+        await cartProvider.addToCart(request.tableId, Product(
           id: item.productId,
           name: item.productName,
           price: 0, // In real scenario, price would be fetched from ProductProvider
-        ), quantity: item.quantity);
+        ));
+        
+        // If quantity > 1, we might need to handle it. 
+        // Based on CartProvider.addToCart, it increments by 1.
+        for (int i = 1; i < item.quantity; i++) {
+          await cartProvider.addToCart(request.tableId, Product(
+            id: item.productId,
+            name: item.productName,
+            price: 0,
+          ));
+        }
       }
       
       if (context.mounted) {

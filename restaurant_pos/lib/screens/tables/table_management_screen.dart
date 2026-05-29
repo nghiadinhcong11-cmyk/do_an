@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:restaurant_pos/widgets/common/app_drawer.dart';
 import '../../providers/table_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/cards/table_card.dart';
 
 class TableManagementScreen extends StatefulWidget {
