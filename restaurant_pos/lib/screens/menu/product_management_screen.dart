@@ -5,7 +5,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../widgets/cards/product_card.dart';
 import '../../widgets/common/app_drawer.dart';
-
 import '../../services/api/api_product_service.dart';
 
 class ProductManagementScreen extends StatefulWidget {
@@ -85,6 +84,8 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
       ),
     );
   }
+
+  void _showAddProductDialog() {
     final nameController = TextEditingController();
     final priceController = TextEditingController();
     final costPriceController = TextEditingController();
@@ -93,20 +94,20 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Them mon moi'),
+        title: const Text('Thêm món mới'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Ten mon')),
-              TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Gia ban'), keyboardType: TextInputType.number),
-              TextField(controller: costPriceController, decoration: const InputDecoration(labelText: 'Gia von'), keyboardType: TextInputType.number),
-              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Danh muc')),
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Tên món')),
+              TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Giá bán'), keyboardType: TextInputType.number),
+              TextField(controller: costPriceController, decoration: const InputDecoration(labelText: 'Giá vốn'), keyboardType: TextInputType.number),
+              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Danh mục')),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Huy')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Hủy')),
           ElevatedButton(
             onPressed: () async {
               if (nameController.text.isEmpty || priceController.text.isEmpty) return;
@@ -117,13 +118,13 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                 name: nameController.text.trim(),
                 price: double.tryParse(priceController.text) ?? 0,
                 costPrice: double.tryParse(costPriceController.text) ?? 0,
-                category: categoryController.text.trim().isEmpty ? 'Khac' : categoryController.text.trim(),
+                category: categoryController.text.trim().isEmpty ? 'Khác' : categoryController.text.trim(),
               ));
               if (!mounted) return;
               navigator.pop();
               setState(() {});
             },
-            child: const Text('Luu'),
+            child: const Text('Lưu'),
           ),
         ],
       ),
@@ -134,10 +135,10 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Xac nhan xoa'),
-        content: Text('Ban co chac chan muon xoa mon "${product.name}"?'),
+        title: const Text('Xác nhận xóa'),
+        content: Text('Bạn có chắc chắn muốn xóa món "${product.name}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Huy')),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Hủy')),
           TextButton(
             onPressed: () async {
               final provider = Provider.of<ProductProvider>(dialogContext, listen: false);
@@ -147,7 +148,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
               navigator.pop();
               setState(() {});
             },
-            child: const Text('Xoa', style: TextStyle(color: Colors.red)),
+            child: const Text('Xóa', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

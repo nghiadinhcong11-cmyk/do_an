@@ -59,14 +59,14 @@ class _OrderScreenState extends State<OrderScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Thanh toan thanh cong ban ${widget.tableName}!'), backgroundColor: Colors.green),
+          SnackBar(content: Text('Thanh toán thành công bàn ${widget.tableName}!'), backgroundColor: Colors.green),
         );
         Navigator.popUntil(context, (route) => route.isFirst);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Thanh toan that bai: $e'), backgroundColor: Colors.redAccent),
+          SnackBar(content: Text('Thanh toán thất bại: $e'), backgroundColor: Colors.redAccent),
         );
       }
     } finally {
@@ -86,7 +86,7 @@ class _OrderScreenState extends State<OrderScreen> {
         backgroundColor: Colors.white,
         elevation: 0.5,
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.black87), onPressed: _isProcessing ? null : () => Navigator.pop(context)),
-        title: Text('Chi tiet hoa don - ${widget.tableName}', style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold)),
+        title: Text('Chi tiết hóa đơn - ${widget.tableName}', style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold)),
       ),
       body: currentCart.isEmpty
           ? Center(
@@ -114,10 +114,11 @@ class _OrderScreenState extends State<OrderScreen> {
                       final item = currentCart[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.grey.shade200),
+                        ),
                         elevation: 0,
-                        borderOnForeground: true,
-                        side: BorderSide(color: Colors.grey.shade200),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Row(
@@ -227,8 +228,6 @@ class _OrderScreenState extends State<OrderScreen> {
           ),
         ],
       ),
-    );
-  }
     );
   }
 }
