@@ -7,6 +7,7 @@ type Restaurant = {
   address?: string;
   contactPhone?: string;
   status: string;
+  ownerId: string;
 };
 
 export default function RestaurantProfilePage() {
