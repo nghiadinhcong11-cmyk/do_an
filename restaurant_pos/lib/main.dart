@@ -4,6 +4,7 @@ import 'package:restaurant_pos/screens/main_screen.dart';
 import 'package:restaurant_pos/screens/login/register_screen.dart';
 import 'package:restaurant_pos/screens/order/request_list_screen.dart';
 import 'package:restaurant_pos/screens/settings/store_settings_screen.dart';
+import 'package:restaurant_pos/screens/settings/profile_screen.dart';
 import 'providers/table_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/order_provider.dart';
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
         '/history': (context) => const HistoryScreen(),
         '/register': (context) => const RegisterScreen(),
         '/store-settings': (context) => const StoreSettingsScreen(),
+        '/profile': (context) => const ProfileScreen(),
         '/requests': (context) => const RequestListScreen(),
       },
     );

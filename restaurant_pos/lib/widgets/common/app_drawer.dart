@@ -52,6 +52,9 @@ class AppDrawer extends StatelessWidget {
                   _buildDrawerItem(context, 'Đơn hàng đang mở', '/orders', Icons.receipt_long_rounded),
                   _buildDrawerItem(context, 'Lịch sử thanh toán', '/history', Icons.history_rounded),
                   
+                  if (!auth.isOwner)
+                    _buildDrawerItem(context, 'Tài khoản cá nhân', '/profile', Icons.person_rounded),
+                  
                   if (auth.isOwner) ...[
                     const Divider(),
                     const Padding(

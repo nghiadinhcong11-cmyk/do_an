@@ -7,6 +7,7 @@ import 'tables/table_management_screen.dart';
 import 'order/order_management_screen.dart';
 import 'history/history_screen.dart';
 import 'settings/store_settings_screen.dart';
+import 'settings/profile_screen.dart';
 import 'statistics/statistics_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -43,7 +44,7 @@ class _MainScreenState extends State<MainScreen> {
         const TableManagementScreen(),
         const OrderManagementScreen(),
         const HistoryScreen(),
-        const StoreSettingsScreen(),
+        const ProfileScreen(),
       ];
     } else {
       // For Guests
@@ -51,7 +52,7 @@ class _MainScreenState extends State<MainScreen> {
         const HomeScreen(),
         const TableManagementScreen(), // Limited view
         const HistoryScreen(), // Maybe empty
-        const StoreSettingsScreen(), // Limited or hidden
+        const ProfileScreen(),
       ];
     }
   }
@@ -60,9 +61,9 @@ class _MainScreenState extends State<MainScreen> {
     if (auth.isOwner) {
       return ['/home', '/table_management', '/orders', '/statistics', '/store-settings'];
     } else if (auth.isStaff) {
-      return ['/home', '/table_management', '/orders', '/history', '/store-settings'];
+      return ['/home', '/table_management', '/orders', '/history', '/profile'];
     } else {
-      return ['/home', '/table_management', '/history', '/store-settings'];
+      return ['/home', '/table_management', '/history', '/profile'];
     }
   }
 
@@ -111,7 +112,7 @@ class _MainScreenState extends State<MainScreen> {
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Trang chủ'),
         BottomNavigationBarItem(icon: Icon(Icons.table_restaurant_outlined), activeIcon: Icon(Icons.table_restaurant), label: 'Sơ đồ bàn'),
         BottomNavigationBarItem(icon: Icon(Icons.history_outlined), activeIcon: Icon(Icons.history), label: 'Lịch sử'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'Cài đặt'),
+        BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Tài khoản'),
       ];
     }
 
@@ -124,7 +125,11 @@ class _MainScreenState extends State<MainScreen> {
         activeIcon: Icon(auth.isOwner ? Icons.bar_chart : Icons.history),
         label: auth.isOwner ? 'Thống kê' : 'Lịch sử',
       ),
-      const BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), activeIcon: Icon(Icons.settings), label: 'Cài đặt'),
+      BottomNavigationBarItem(
+        icon: Icon(auth.isOwner ? Icons.settings_outlined : Icons.person_outline), 
+        activeIcon: Icon(auth.isOwner ? Icons.settings : Icons.person), 
+        label: auth.isOwner ? 'Cài đặt' : 'Tài khoản',
+      ),
     ];
   }
 }
