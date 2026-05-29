@@ -49,38 +49,69 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
-      <form onSubmit={submit} className="w-full max-w-md bg-white rounded-2xl p-8 shadow-lg space-y-4">
-        <h1 className="text-2xl font-bold text-slate-800">Đăng ký tài khoản</h1>
-        <input className="w-full border rounded-lg px-3 py-2" placeholder="Tên đăng nhập" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        <input className="w-full border rounded-lg px-3 py-2" type="password" placeholder="Mật khẩu" value={password} onChange={(e) => setPassword(e.target.value)} required />
-
-        <div>
-          <label className="text-xs text-slate-500 mb-1 block">Bạn là ai?</label>
-          <select className="w-full border rounded-lg px-3 py-2" value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
-            <option value="owner">Chủ quán (Tạo quán mới)</option>
-            <option value="customer">Khách hàng (Tích điểm & Ưu đãi)</option>
-            <option value="staff">Nhân viên (Vào quán đã có)</option>
-          </select>
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-8 md:py-12">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center mb-4">
+           <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight">Tham gia FokaPOS</h2>
+           <p className="mt-2 text-sm text-slate-600 px-4 text-center">Giải pháp vận hành quán ăn tối ưu</p>
         </div>
 
-        {role === 'owner' ? (
-          <input className="w-full border rounded-lg px-3 py-2 bg-blue-50" placeholder="Tên quán của bạn" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} required />
-        ) : role === 'staff' ? (
-          <>
-            <input className="w-full border rounded-lg px-3 py-2" placeholder="Mã nhà hàng (Restaurant ID)" value={restaurantId} onChange={(e) => setRestaurantId(e.target.value)} required />
-            <input className="w-full border rounded-lg px-3 py-2" placeholder="Mã chi nhánh (Branch ID - tùy chọn)" value={branchId} onChange={(e) => setBranchId(e.target.value)} />
-          </>
-        ) : (
-          <input className="w-full border rounded-lg px-3 py-2 bg-green-50" placeholder="Họ và tên của bạn" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} />
-        )}
+        <form onSubmit={submit} className="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-slate-200 space-y-4">
+          <h1 className="text-lg md:text-xl font-bold text-slate-800 text-center mb-2">Đăng ký tài khoản</h1>
 
-        <input className="w-full border rounded-lg px-3 py-2 border-dashed" placeholder="Mã kích hoạt Admin (nếu có)" value={adminCode} onChange={(e) => setAdminCode(e.target.value)} />
+          <div className="flex bg-slate-100 p-1 rounded-xl mb-4 overflow-x-auto">
+            <button
+              type="button"
+              onClick={() => setRole("owner")}
+              className={`flex-1 min-w-fit px-2 py-2 text-[10px] md:text-xs font-bold rounded-lg transition-all ${role === 'owner' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}
+            >
+              CHỦ QUÁN
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("customer")}
+              className={`flex-1 min-w-fit px-2 py-2 text-[10px] md:text-xs font-bold rounded-lg transition-all ${role === 'customer' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}
+            >
+              KHÁCH HÀNG
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("staff")}
+              className={`flex-1 min-w-fit px-2 py-2 text-[10px] md:text-xs font-bold rounded-lg transition-all ${role === 'staff' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}
+            >
+              NHÂN VIÊN
+            </button>
+          </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <button className="w-full bg-slate-900 text-white rounded-lg py-2 font-medium">Đăng ký ngay</button>
-        <p className="text-sm text-slate-600 text-center">Đã có tài khoản? <Link className="text-blue-600" to="/login">Đăng nhập</Link></p>
-      </form>
+          <div className="space-y-3">
+            <input className="w-full border-2 border-slate-50 rounded-xl px-4 py-3 focus:border-blue-500 outline-none bg-slate-50 focus:bg-white transition-all text-base" placeholder="Tên đăng nhập" value={username} onChange={(e) => setUsername(e.target.value)} required />
+            <input className="w-full border-2 border-slate-50 rounded-xl px-4 py-3 focus:border-blue-500 outline-none bg-slate-50 focus:bg-white transition-all text-base" type="password" placeholder="Mật khẩu" value={password} onChange={(e) => setPassword(e.target.value)} required />
+
+            {role === 'owner' ? (
+              <input className="w-full border-2 border-blue-50 rounded-xl px-4 py-3 focus:border-blue-500 outline-none bg-blue-50/30 focus:bg-white transition-all text-base" placeholder="Tên quán của bạn" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} required />
+            ) : role === 'staff' ? (
+              <div className="space-y-3">
+                <input className="w-full border-2 border-slate-50 rounded-xl px-4 py-3 focus:border-blue-500 outline-none bg-slate-50 focus:bg-white transition-all font-mono text-sm" placeholder="Mã nhà hàng (ID)" value={restaurantId} onChange={(e) => setRestaurantId(e.target.value)} required />
+                <input className="w-full border-2 border-slate-50 rounded-xl px-4 py-3 focus:border-blue-500 outline-none bg-slate-50 focus:bg-white transition-all text-base" placeholder="Mã chi nhánh (Tùy chọn)" value={branchId} onChange={(e) => setBranchId(e.target.value)} />
+              </div>
+            ) : (
+              <input className="w-full border-2 border-green-50 rounded-xl px-4 py-3 focus:border-green-500 outline-none bg-green-50/30 focus:bg-white transition-all text-base" placeholder="Họ và tên của bạn" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} />
+            )}
+
+            <input className="w-full border-2 border-slate-50 border-dashed rounded-xl px-4 py-3 focus:border-blue-500 outline-none bg-slate-50 focus:bg-white transition-all text-[10px]" placeholder="Mã kích hoạt Admin (nếu có)" value={adminCode} onChange={(e) => setAdminCode(e.target.value)} />
+          </div>
+
+          {error && <p className="text-sm text-red-500 text-center font-medium bg-red-50 py-2 rounded-lg px-2">{error}</p>}
+
+          <button className="w-full bg-slate-900 hover:bg-black text-white rounded-xl py-4 font-bold text-lg shadow-lg active:scale-[0.98] transition-all mt-4">
+            Đăng ký ngay
+          </button>
+
+          <p className="text-sm text-slate-600 text-center pt-2">
+            Đã có tài khoản? <Link className="text-blue-600 font-bold hover:underline" to="/login">Đăng nhập</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
