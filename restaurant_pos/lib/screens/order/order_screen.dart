@@ -89,7 +89,21 @@ class _OrderScreenState extends State<OrderScreen> {
         title: Text('Chi tiet hoa don - ${widget.tableName}', style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold)),
       ),
       body: currentCart.isEmpty
-          ? const Center(child: Text('Chua co mon nao trong danh sach.'))
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey.shade400),
+                  const SizedBox(height: 16),
+                  const Text('Chưa có món nào trong danh sách.', style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Quay lại chọn món'),
+                  ),
+                ],
+              ),
+            )
           : Column(
               children: [
                 Expanded(
@@ -98,29 +112,123 @@ class _OrderScreenState extends State<OrderScreen> {
                     itemCount: currentCart.length,
                     itemBuilder: (context, index) {
                       final item = currentCart[index];
-                      return ListTile(
-                        title: Text(item.product.name),
-                        subtitle: Text(AppFormat.money(item.product.price)),
-                        trailing: Text(AppFormat.money(item.product.price * item.quantity)),
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                        borderOnForeground: true,
+                        side: BorderSide(color: Colors.grey.shade200),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.restaurant, color: Colors.blue),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                    Text(AppFormat.money(item.product.price), style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
+                                    onPressed: () => cartProvider.updateQuantity(widget.tableId, item.product.id, -1),
+                                  ),
+                                  Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  IconButton(
+                                    icon: const Icon(Icons.add_circle_outline, color: Colors.blue),
+                                    onPressed: () => cartProvider.updateQuantity(widget.tableId, item.product.id, 1),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                    onPressed: () => cartProvider.removeFromCart(widget.tableId, item.product.id),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     },
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: _isProcessing ? null : () => _processFinalPayment(cartProvider),
-                      child: _isProcessing
-                          ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, valueColor: AlwaysStoppedAnimation(Colors.white)))
-                          : Text('Xac nhan Thanh toan ${AppFormat.money(totalPrice)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                ),
+                _buildSummarySection(cartProvider, totalPrice),
               ],
             ),
+    );
+  }
+
+  Widget _buildSummarySection(CartProvider cartProvider, double total) {
+    final subTotal = cartProvider.getSubTotalPriceByTable(widget.tableId);
+    final vat = cartProvider.getVatByTable(widget.tableId);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -4))],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Tạm tính', style: TextStyle(color: Colors.grey)),
+              Text(AppFormat.money(subTotal)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Thuế VAT (3%)', style: TextStyle(color: Colors.grey)),
+              Text(AppFormat.money(vat)),
+            ],
+          ),
+          const Divider(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('TỔNG CỘNG', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(AppFormat.money(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.redAccent)),
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton(
+              onPressed: _isProcessing ? null : () => _processFinalPayment(cartProvider),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade600,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+              ),
+              child: _isProcessing
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('XÁC NHẬN THANH TOÁN', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
     );
   }
 }

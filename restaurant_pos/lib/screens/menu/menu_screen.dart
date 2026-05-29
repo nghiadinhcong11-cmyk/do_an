@@ -152,23 +152,94 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
 
     return GridView.builder(
       padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.75),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, 
+        crossAxisSpacing: 16, 
+        mainAxisSpacing: 16, 
+        childAspectRatio: 0.72
+      ),
       itemCount: filteredProducts.length,
       itemBuilder: (context, index) {
         final product = filteredProducts[index];
-        return Card(
-          child: Column(
-            children: [
-              Expanded(child: Center(child: Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis))),
-              Text(AppFormat.money(product.price)),
-              IconButton(
-                onPressed: () {
-                  Provider.of<CartProvider>(context, listen: false).addToCart(widget.tableId, product);
-                  Provider.of<TableProvider>(context, listen: false).updateTableStatus(widget.tableId, TableStatus.occupied);
-                },
-                icon: const Icon(Icons.add_circle),
-              ),
-            ],
+        final isAvailable = product.isAvailable;
+
+        return Opacity(
+          opacity: isAvailable ? 1.0 : 0.6,
+          child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    ),
+                    child: Stack(
+                      children: [
+                        const Center(child: Icon(Icons.restaurant, size: 40, color: Colors.blue)),
+                        if (product.isBestSeller)
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(color: Colors.amber, borderRadius: BorderRadius.circular(8)),
+                              child: const Text('BÁN CHẠY', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                            ),
+                          ),
+                        if (!isAvailable)
+                          Container(
+                            decoration: BoxDecoration(color: Colors.black45, borderRadius: const BorderRadius.vertical(top: Radius.circular(16))),
+                            child: const Center(child: Text('HẾT MÓN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      const SizedBox(height: 4),
+                      Text(AppFormat.money(product.price), style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 36,
+                        child: ElevatedButton(
+                          onPressed: !isAvailable ? null : () {
+                            Provider.of<CartProvider>(context, listen: false).addToCart(widget.tableId, product);
+                            Provider.of<TableProvider>(context, listen: false).updateTableStatus(widget.tableId, TableStatus.occupied);
+                            ScaffoldMessenger.of(context).clearSnackBars();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Đã thêm ${product.name} vào giỏ'), 
+                                duration: const Duration(seconds: 1),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade600,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            elevation: 0,
+                          ),
+                          child: const Icon(Icons.add_shopping_cart, size: 18),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

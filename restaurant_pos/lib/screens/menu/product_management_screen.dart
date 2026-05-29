@@ -38,7 +38,53 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
     }
   }
 
-  void _showAddProductDialog() {
+  void _showEditProductDialog(Product product) {
+    final nameController = TextEditingController(text: product.name);
+    final priceController = TextEditingController(text: product.price.toString());
+    final costPriceController = TextEditingController(text: product.costPrice.toString());
+    final categoryController = TextEditingController(text: product.category);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Sửa món ăn'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Tên món')),
+              TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Giá bán'), keyboardType: TextInputType.number),
+              TextField(controller: costPriceController, decoration: const InputDecoration(labelText: 'Giá vốn'), keyboardType: TextInputType.number),
+              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Danh mục')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Hủy')),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameController.text.isEmpty || priceController.text.isEmpty) return;
+              final provider = Provider.of<ProductProvider>(dialogContext, listen: false);
+              final navigator = Navigator.of(dialogContext);
+              await provider.updateProduct(Product(
+                id: product.id,
+                name: nameController.text.trim(),
+                price: double.tryParse(priceController.text) ?? 0,
+                costPrice: double.tryParse(costPriceController.text) ?? 0,
+                category: categoryController.text.trim().isEmpty ? 'Khác' : categoryController.text.trim(),
+                isAvailable: product.isAvailable,
+                isBestSeller: product.isBestSeller,
+              ));
+              if (!mounted) return;
+              navigator.pop();
+              setState(() {});
+            },
+            child: const Text('Lưu'),
+          ),
+        ],
+      ),
+    );
+  }
     final nameController = TextEditingController();
     final priceController = TextEditingController();
     final costPriceController = TextEditingController();
@@ -151,7 +197,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
                           itemCount: products.length,
                           itemBuilder: (context, index) => ProductCard(
                             product: products[index],
-                            onEdit: auth.isOwner ? () {} : null,
+                            onEdit: auth.isOwner ? () => _showEditProductDialog(products[index]) : null,
                             onDelete: auth.isOwner ? () => _confirmDelete(products[index]) : null,
                             onToggleAvailable: auth.isOwner ? (val) => _toggleProductStatus(products[index], 'availability', val) : null,
                             onToggleBestSeller: auth.isOwner ? (val) => _toggleProductStatus(products[index], 'bestseller', val) : null,

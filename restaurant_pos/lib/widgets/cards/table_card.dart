@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/table_model.dart';
 import '../../core/utils/app_format.dart';
 import '../../screens/menu/menu_screen.dart';
+import '../../screens/order/order_screen.dart';
 import '../../core/enums/table_status.dart';
 import '../../providers/table_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -72,7 +73,20 @@ class TableCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              _buildButton('Mở Menu / Đặt món', Colors.blue.shade50, Colors.blue, () {
+              if (table.status == TableStatus.occupied)
+                _buildButton('Xem hóa đơn', Colors.green.shade50, Colors.green, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OrderScreen(
+                        tableId: table.id.toString(),
+                        tableName: table.name,
+                      ),
+                    ),
+                  );
+                }),
+              if (table.status == TableStatus.occupied) const SizedBox(width: 8),
+              _buildButton('Thêm món', Colors.blue.shade50, Colors.blue, () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(

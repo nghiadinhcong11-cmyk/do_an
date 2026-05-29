@@ -30,6 +30,14 @@ class ProductProvider with ChangeNotifier {
     await fetchProducts(_currentUserId ?? 'admin');
   }
 
+  Future<void> updateProduct(Product product) async {
+    if (_apiService == null) {
+      throw Exception('API service not available. Please login first.');
+    }
+    await _apiService!.updateProduct(product);
+    await fetchProducts(_currentUserId ?? 'admin');
+  }
+
   Future<void> deleteProduct(String id) async {
     if (_apiService == null) {
       throw Exception('API service not available. Please login first.');
