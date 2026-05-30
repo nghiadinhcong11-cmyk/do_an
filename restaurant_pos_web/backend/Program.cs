@@ -99,6 +99,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("FrontendPolicy");
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
