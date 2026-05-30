@@ -4,6 +4,12 @@ import '../../core/utils/app_format.dart';
 import '../../database/dao/order_dao.dart';
 import '../../models/order.dart';
 import '../../models/order_item.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:ui' as ui;
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+// removed unused dart:typed_data import
 
 class PrintOrderScreen extends StatefulWidget {
   final String
@@ -18,6 +24,34 @@ class PrintOrderScreen extends StatefulWidget {
 class _PrintOrderScreenState extends State<PrintOrderScreen> {
   final OrderDao _orderDao = OrderDao();
   final dateFormat = DateFormat('HH:mm:ss dd/MM/yyyy');
+
+  Future<void> _exportQr(OrderModel order) async {
+    final String data = order.lookupCode.isNotEmpty
+        ? order.lookupCode
+        : order.invoiceNo.isNotEmpty
+            ? order.invoiceNo
+            : (order.id ?? '');
+
+    final painter = QrPainter(
+      data: data,
+      version: QrVersions.auto,
+      gapless: true,
+      color: const Color(0xFF000000),
+    );
+
+    const ui.ImageByteFormat format = ui.ImageByteFormat.png;
+    final picData = await painter.toImageData(1024, format: format);
+    if (picData == null) throw Exception('Không thể tạo ảnh QR');
+
+    final bytes = picData.buffer.asUint8List();
+    final tempDir = await getTemporaryDirectory();
+    final safeName = data.replaceAll(RegExp(r'[^A-Za-z0-9_\-]'), '_');
+    final file = File('${tempDir.path}/qr_$safeName.png');
+    await file.writeAsBytes(bytes);
+
+    await Share.shareXFiles([XFile(file.path)],
+        text: 'Mã tra cứu hóa đơn: $data');
+  }
 
   // Hàm tải đồng thời cả thông tin hóa đơn và danh sách món ăn từ DB
   Future<Map<String, dynamic>> _loadInvoiceData() async {
@@ -176,6 +210,35 @@ class _PrintOrderScreenState extends State<PrintOrderScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14))),
+                        onPressed: () async {
+                          // Export QR (share PNG) for order lookup code
+                          try {
+                            await _exportQr(order);
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Đã xuất QR')),
+                            );
+                          } catch (e) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text('Xuất QR thất bại: $e')));
+                          }
+                        },
+                        icon: const Icon(Icons.qr_code, color: Colors.white),
+                        label: const Text('Xuất QR',
+                            style:
+                                TextStyle(fontSize: 16, color: Colors.white)),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
                     SizedBox(
                       width: double.infinity,
                       height: 52,

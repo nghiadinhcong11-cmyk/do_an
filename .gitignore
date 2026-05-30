@@ -7,6 +7,10 @@
 **/sky_engine/
 .pub-cache/
 .pub/
+build/
+android/.kotlin/
+.pub-cache/
+.pub/
 
 # Backend (.NET)
 **/bin/
