@@ -32,6 +32,13 @@ class AuthProvider with ChangeNotifier {
   bool get isGuest => _userId == null || _role?.toLowerCase() == 'guest';
   bool get isSuperAdmin => _role?.toLowerCase() == 'admin' || _role?.toLowerCase() == 'superadmin';
 
+  void updateBankInfo({String? code, String? number, String? name}) {
+    _bankCode = code;
+    _bankAccountNumber = number;
+    _bankAccountName = name;
+    notifyListeners();
+  }
+
   void loginWithSession({required String userId, required AppSession session}) {
     _userId = userId;
     _userName = session.username;

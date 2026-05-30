@@ -9,6 +9,7 @@ import '../../database/database_helper.dart';
 import '../../models/order.dart';
 import '../../models/order_item.dart';
 import '../../services/api/api_order_service.dart';
+import '../../services/api/api_restaurant_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class OrderScreen extends StatefulWidget {
@@ -85,6 +86,25 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Future<bool?> _showPaymentQRDialog(AuthProvider auth, double amount) async {
+    setState(() => _isProcessing = true);
+    
+    // Luôn lấy thông tin ngân hàng mới nhất từ Server trước khi hiện QR
+    try {
+      final restaurantService = ApiRestaurantService(auth.apiClient);
+      final info = await restaurantService.getMyRestaurantInfo();
+      
+      auth.updateBankInfo(
+        code: info['bankCode']?.toString(),
+        number: info['bankAccountNumber']?.toString(),
+        name: info['bankAccountName']?.toString(),
+      );
+    } catch (e) {
+      debugPrint('Không thể cập nhật thông tin ngân hàng: $e');
+      // Nếu lỗi mạng, vẫn tiếp tục dùng thông tin cũ trong auth nếu có
+    } finally {
+      setState(() => _isProcessing = false);
+    }
+
     String? bankCode = auth.bankCode;
     String? bankAccount = auth.bankAccountNumber;
     String? bankOwner = auth.bankAccountName;
