@@ -9,15 +9,13 @@ import '../../database/database_helper.dart';
 import '../../models/order.dart';
 import '../../models/order_item.dart';
 import '../../services/api/api_order_service.dart';
-
 import 'package:qr_flutter/qr_flutter.dart';
 
 class OrderScreen extends StatefulWidget {
   final String tableId;
   final String tableName;
 
-  const OrderScreen(
-      {super.key, required this.tableId, required this.tableName});
+  const OrderScreen({super.key, required this.tableId, required this.tableName});
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -27,31 +25,19 @@ class _OrderScreenState extends State<OrderScreen> {
   bool _isProcessing = false;
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
-  @override
-  void initState() {
-    super.initState();
-    // Load persisted cart for this table
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final cartProvider = Provider.of<CartProvider>(context, listen: false);
-      cartProvider.loadCart(widget.tableId);
-    });
-  }
-
   Future<void> _processFinalPayment(CartProvider cartProvider) async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final totalPrice = cartProvider.getTableTotalPrice(widget.tableId);
 
-    // 1. Show QR Payment Dialog first
+    // 1. Show QR Payment Dialog
     final bool? confirmed = await _showPaymentQRDialog(auth, totalPrice);
-
     if (confirmed != true) return;
 
     setState(() => _isProcessing = true);
     try {
       final currentCart = cartProvider.getItemsByTable(widget.tableId);
       final orderItems = currentCart
-          .map((cartItem) =>
-              OrderItem(product: cartItem.product, quantity: cartItem.quantity))
+          .map((cartItem) => OrderItem(product: cartItem.product, quantity: cartItem.quantity))
           .toList();
 
       final now = DateTime.now();
@@ -74,7 +60,7 @@ class _OrderScreenState extends State<OrderScreen> {
 
       await ApiOrderService(auth.apiClient).createOrder(order);
 
-      // 2. Clear cart and update table status to EMPTY
+      // 2. Success: Clear cart and set table EMPTY
       await cartProvider.clearTableCart(widget.tableId);
       if (mounted) {
         await Provider.of<TableProvider>(context, listen: false)
@@ -83,18 +69,14 @@ class _OrderScreenState extends State<OrderScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Thanh toán thành công bàn ${widget.tableName}!'),
-              backgroundColor: Colors.green),
+          SnackBar(content: Text('Thanh toán thành công bàn ${widget.tableName}!'), backgroundColor: Colors.green),
         );
         Navigator.popUntil(context, (route) => route.isFirst);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Thanh toán thất bại: $e'),
-              backgroundColor: Colors.redAccent),
+          SnackBar(content: Text('Lỗi thanh toán: $e'), backgroundColor: Colors.redAccent),
         );
       }
     } finally {
@@ -107,51 +89,27 @@ class _OrderScreenState extends State<OrderScreen> {
     String? bankAccount = auth.bankAccountNumber;
     String? bankOwner = auth.bankAccountName;
 
-    // Fallback to local settings if auth doesn't have bank info
-    try {
-      if (bankCode == null) {
-        final v = await _dbHelper.getSetting('bank_name', '');
-        if (v.isNotEmpty) bankCode = v;
-      }
-      if (bankAccount == null) {
-        final v = await _dbHelper.getSetting('bank_account', '');
-        if (v.isNotEmpty) bankAccount = v;
-      }
-      if (bankOwner == null) {
-        final v = await _dbHelper.getSetting('bank_owner', '');
-        if (v.isNotEmpty) bankOwner = v;
-      }
-    } catch (_) {}
-
     if (bankAccount == null || bankCode == null) {
       return showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Thiếu thông tin thanh toán'),
-          content: const Text(
-              'Chủ quán chưa thiết lập tài khoản ngân hàng trên Web. Vui lòng thanh toán tiền mặt.'),
+          content: const Text('Chủ quán chưa thiết lập tài khoản ngân hàng trên Web. Vui lòng thanh toán tiền mặt.'),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Hủy')),
-            ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Đã nhận tiền mặt')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Hủy')),
+            ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Đã nhận tiền mặt')),
           ],
         ),
       );
     }
 
-    final String vietQrUrl =
-        'https://img.vietqr.io/image/${bankCode}-${bankAccount}-compact.png?amount=${amount.toInt()}&addInfo=Thanh%20toan%20${widget.tableName}&accountName=${Uri.encodeComponent(bankOwner ?? '')}';
+    final String vietQrUrl = 'https://img.vietqr.io/image/$bankCode-$bankAccount-compact.png?amount=${amount.toInt()}&addInfo=Thanh%20toan%20${widget.tableName}&accountName=${Uri.encodeComponent(bankOwner ?? '')}';
 
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Quét mã thanh toán',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Quét mã thanh toán', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -169,27 +127,18 @@ class _OrderScreenState extends State<OrderScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(AppFormat.money(amount),
-                style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.redAccent)),
+            Text(AppFormat.money(amount), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.redAccent)),
             const SizedBox(height: 8),
-            Text('STK: $bankAccount',
-                style: const TextStyle(fontWeight: FontWeight.w500)),
-            Text('Ngân hàng: $bankCode',
-                style: const TextStyle(color: Colors.grey)),
+            Text('STK: $bankAccount', style: const TextStyle(fontWeight: FontWeight.w500)),
+            Text('Ngân hàng: $bankCode', style: const TextStyle(color: Colors.grey)),
           ],
         ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Quay lại')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Quay lại')),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text('Xác nhận đã trả tiền',
-                style: TextStyle(color: Colors.white)),
+            child: const Text('Xác nhận đã trả tiền', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -208,24 +157,20 @@ class _OrderScreenState extends State<OrderScreen> {
         backgroundColor: Colors.white,
         elevation: 0.5,
         leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black87),
-            onPressed: _isProcessing ? null : () => Navigator.pop(context)),
-        title: Text('Chi tiết hóa đơn - ${widget.tableName}',
-            style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 18,
-                fontWeight: FontWeight.bold)),
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: _isProcessing ? null : () => Navigator.pop(context),
+        ),
+        title: Text('Chi tiết hóa đơn - ${widget.tableName}', 
+          style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold)),
       ),
       body: currentCart.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_cart_outlined,
-                      size: 64, color: Colors.grey.shade400),
+                  Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey.shade400),
                   const SizedBox(height: 16),
-                  const Text('Chưa có món nào trong danh sách.',
-                      style: TextStyle(color: Colors.grey)),
+                  const Text('Chưa có món nào.', style: TextStyle(color: Colors.grey)),
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context),
@@ -260,55 +205,33 @@ class _OrderScreenState extends State<OrderScreen> {
                                   color: Colors.blue.shade50,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(Icons.restaurant,
-                                    color: Colors.blue),
+                                child: const Icon(Icons.restaurant, color: Colors.blue),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(item.product.name,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16)),
-                                    Text(AppFormat.money(item.product.price),
-                                        style: TextStyle(
-                                            color: Colors.blue.shade700,
-                                            fontWeight: FontWeight.w500)),
+                                    Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                    Text(AppFormat.money(item.product.price), style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.w500)),
                                   ],
                                 ),
                               ),
                               Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(
-                                        Icons.remove_circle_outline,
-                                        color: Colors.grey),
-                                    onPressed: () =>
-                                        cartProvider.updateQuantity(
-                                            widget.tableId,
-                                            item.product.id,
-                                            -1),
+                                    icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
+                                    onPressed: () => cartProvider.updateQuantity(widget.tableId, item.product.id, -1),
                                   ),
-                                  Text('${item.quantity}',
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16)),
+                                  Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                   IconButton(
-                                    icon: const Icon(Icons.add_circle_outline,
-                                        color: Colors.blue),
-                                    onPressed: () =>
-                                        cartProvider.updateQuantity(
-                                            widget.tableId, item.product.id, 1),
+                                    icon: const Icon(Icons.add_circle_outline, color: Colors.blue),
+                                    onPressed: () => cartProvider.updateQuantity(widget.tableId, item.product.id, 1),
                                   ),
                                   const SizedBox(width: 4),
                                   IconButton(
-                                    icon: const Icon(Icons.delete_outline,
-                                        color: Colors.red),
-                                    onPressed: () =>
-                                        cartProvider.removeFromCart(
-                                            widget.tableId, item.product.id),
+                                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                    onPressed: () => cartProvider.removeFromCart(widget.tableId, item.product.id),
                                   ),
                                 ],
                               ),
@@ -334,12 +257,7 @@ class _OrderScreenState extends State<OrderScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -4))
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -4))],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -363,13 +281,8 @@ class _OrderScreenState extends State<OrderScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('TỔNG CỘNG',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              Text(AppFormat.money(total),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Colors.redAccent)),
+              const Text('TỔNG CỘNG', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(AppFormat.money(total), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.redAccent)),
             ],
           ),
           const SizedBox(height: 20),
@@ -377,22 +290,15 @@ class _OrderScreenState extends State<OrderScreen> {
             width: double.infinity,
             height: 54,
             child: ElevatedButton(
-              onPressed: _isProcessing
-                  ? null
-                  : () => _processFinalPayment(cartProvider),
+              onPressed: _isProcessing ? null : () => _processFinalPayment(cartProvider),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 elevation: 0,
               ),
               child: _isProcessing
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('XÁC NHẬN THANH TOÁN',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold)),
+                  : const Text('XÁC NHẬN THANH TOÁN', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
             ),
           ),
         ],
