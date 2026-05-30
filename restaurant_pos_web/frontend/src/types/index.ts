@@ -32,7 +32,7 @@ export type Product = {
   isAvailable: boolean;
   isBestSeller: boolean;
 };
-鼓
+
 export type Branch = {
   id: string;
   restaurantId: string;
