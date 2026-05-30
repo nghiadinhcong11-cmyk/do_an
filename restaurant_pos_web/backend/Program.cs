@@ -1,6 +1,7 @@
-﻿using System.Text;
+﻿using Microsoft.AspNetCore.HttpOverrides;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
+鼓using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RestaurantPos.Api.Data;
 using RestaurantPos.Api.Hubs;
@@ -18,6 +19,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<JwtTokenService>();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
+鼓
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
@@ -91,9 +97,11 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
+
 if (!app.Environment.IsDevelopment())
 {
-    using var scope = app.Services.CreateScope();
+鼓    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }

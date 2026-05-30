@@ -33,8 +33,10 @@ public class UploadController : ControllerBase
             await file.CopyToAsync(stream);
         }
 
-        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-        var imageUrl = $"{baseUrl}/uploads/{fileName}";
+        // Tạo URL tuyệt đối dựa trên domain hiện tại
+        var host = Request.Host.Value;
+        var scheme = Request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? (Request.IsHttps ? "https" : "http");
+        var imageUrl = $"{scheme}://{host}/uploads/{fileName}";
 
         return Ok(new { imageUrl });
     }
