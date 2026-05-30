@@ -5,6 +5,7 @@ import axios from "axios";
 type Product = {
   id: string;
   name: string;
+  description?: string;
   price: number;
   category: string;
   imageUrl?: string;
@@ -169,6 +170,7 @@ export default function PublicMenuPage() {
                           <h3 className="font-bold text-slate-800 leading-tight">{p.name}</h3>
                           {p.isBestSeller && <span className="bg-yellow-400 text-[10px] font-black px-1.5 py-0.5 rounded ml-2 uppercase">Best</span>}
                         </div>
+                        <p className="text-slate-400 text-[10px] line-clamp-1 mt-0.5">{p.description}</p>
                         <p className="text-orange-600 font-extrabold text-lg mt-1">{p.price.toLocaleString()}đ</p>
                       </div>
 

@@ -23,6 +23,7 @@ export type Revenue = {
 export type Product = {
   id: string;
   name: string;
+  description?: string;
   price: number;
   costPrice: number;
   category: string;
@@ -31,7 +32,7 @@ export type Product = {
   isAvailable: boolean;
   isBestSeller: boolean;
 };
-
+鼓
 export type Branch = {
   id: string;
   restaurantId: string;

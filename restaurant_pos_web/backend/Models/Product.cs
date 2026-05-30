@@ -8,6 +8,7 @@ public class Product
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string RestaurantId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public decimal Price { get; set; }
     public decimal CostPrice { get; set; }
     public string? Category { get; set; }

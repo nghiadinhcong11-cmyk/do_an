@@ -1,6 +1,7 @@
 class Product {
   final String id;
   final String name;
+  final String? description;
   final double price;
   final double costPrice;
   final String category;
@@ -11,6 +12,7 @@ class Product {
   Product({
     required this.id,
     required this.name,
+    this.description,
     required this.price,
     this.costPrice = 0.0,
     this.category = 'Khac',
@@ -23,6 +25,7 @@ class Product {
     return Product(
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
+      description: json['description'],
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       costPrice: (json['costPrice'] as num?)?.toDouble() ?? 0.0,
       category: json['category'] ?? 'Khac',
@@ -36,6 +39,7 @@ class Product {
     return {
       'id': id,
       'name': name,
+      'description': description,
       'price': price,
       'costPrice': costPrice,
       'category': category,
@@ -44,7 +48,6 @@ class Product {
       'isBestSeller': isBestSeller,
     };
   }
-
   // To maintain compatibility with existing code using 'imagePath'
   String? get imagePath => imageUrl;
 }

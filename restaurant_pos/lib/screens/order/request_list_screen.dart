@@ -46,10 +46,21 @@ class RequestListScreen extends StatelessWidget {
     final productProvider =
         Provider.of<ProductProvider>(context, listen: false);
     final tableProvider = Provider.of<TableProvider>(context, listen: false);
+    final auth = Provider.of<AuthProvider>(context, listen: false);
 
     // If it's an order request, add items to the table's cart
     if (request.type == RequestType.order && request.items != null) {
+      // Ensure products are loaded to get correct prices
+      if (productProvider.products.isEmpty) {
+        try {
+          await productProvider.fetchProducts(auth.userId ?? 'admin');
+        } catch (e) {
+          debugPrint('Error fetching products during confirmation: $e');
+        }
+      }
+
       for (var item in request.items!) {
+        // Try to find the actual product from the provider to get the correct price
         final realProduct = productProvider.products.firstWhere(
           (p) => p.id == item.productId,
           orElse: () => Product(
@@ -59,10 +70,10 @@ class RequestListScreen extends StatelessWidget {
           ),
         );
 
-        // Add 1st item
+        // Add to cart with correct price from local database/API
         await cartProvider.addToCart(request.tableId, realProduct);
 
-        // Add remaining items
+        // Add remaining items if quantity > 1
         for (int i = 1; i < item.quantity; i++) {
           await cartProvider.addToCart(request.tableId, realProduct);
         }
