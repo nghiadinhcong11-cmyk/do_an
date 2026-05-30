@@ -32,25 +32,33 @@ class _PrintOrderScreenState extends State<PrintOrderScreen> {
             ? order.invoiceNo
             : (order.id ?? '');
 
+    final String trimmed = data.trim();
+    if (trimmed.isEmpty) throw Exception('Mã tra cứu rỗng, không thể xuất QR');
+
     final painter = QrPainter(
-      data: data,
+      data: trimmed,
       version: QrVersions.auto,
       gapless: true,
       color: const Color(0xFF000000),
     );
 
     const ui.ImageByteFormat format = ui.ImageByteFormat.png;
-    final picData = await painter.toImageData(1024, format: format);
-    if (picData == null) throw Exception('Không thể tạo ảnh QR');
 
-    final bytes = picData.buffer.asUint8List();
-    final tempDir = await getTemporaryDirectory();
-    final safeName = data.replaceAll(RegExp(r'[^A-Za-z0-9_\-]'), '_');
-    final file = File('${tempDir.path}/qr_$safeName.png');
-    await file.writeAsBytes(bytes);
+    try {
+      final picData = await painter.toImageData(1024, format: format);
+      if (picData == null) throw Exception('Không thể tạo ảnh QR');
 
-    await Share.shareXFiles([XFile(file.path)],
-        text: 'Mã tra cứu hóa đơn: $data');
+      final bytes = picData.buffer.asUint8List();
+      final tempDir = await getTemporaryDirectory();
+      final safeName = trimmed.replaceAll(RegExp(r'[^A-Za-z0-9_\-]'), '_');
+      final file = File('${tempDir.path}/qr_$safeName.png');
+      await file.writeAsBytes(bytes);
+
+      await Share.shareXFiles([XFile(file.path)],
+          text: 'Mã tra cứu hóa đơn: $trimmed');
+    } catch (e) {
+      throw Exception('Lỗi khi tạo hoặc chia sẻ QR: $e');
+    }
   }
 
   // Hàm tải đồng thời cả thông tin hóa đơn và danh sách món ăn từ DB

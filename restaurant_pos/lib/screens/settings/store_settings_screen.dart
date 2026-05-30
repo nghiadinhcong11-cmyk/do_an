@@ -33,9 +33,7 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
       final address = await _dbHelper.getSetting('store_address', '');
       final phone = await _dbHelper.getSetting('store_phone', '');
       final paperSize = await _dbHelper.getSetting('paper_size', '80mm');
-      final bankName = await _dbHelper.getSetting('bank_name', '');
-      final bankAccount = await _dbHelper.getSetting('bank_account', '');
-      final bankOwner = await _dbHelper.getSetting('bank_owner', '');
+      // bank settings are managed on the web dashboard; do not load in mobile
 
       if (!mounted) return;
       setState(() {
@@ -43,9 +41,7 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
         _addressController.text = address;
         _phoneController.text = phone;
         _paperSize = paperSize;
-        _bankNameController.text = bankName;
-        _bankAccountController.text = bankAccount;
-        _bankOwnerController.text = bankOwner;
+        // intentionally left blank for bank fields
         _isLoading = false;
       });
     } catch (e) {
@@ -59,13 +55,13 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _dbHelper.saveSetting('store_name', _storeNameController.text.trim());
-      await _dbHelper.saveSetting('store_address', _addressController.text.trim());
+      await _dbHelper.saveSetting(
+          'store_name', _storeNameController.text.trim());
+      await _dbHelper.saveSetting(
+          'store_address', _addressController.text.trim());
       await _dbHelper.saveSetting('store_phone', _phoneController.text.trim());
       await _dbHelper.saveSetting('paper_size', _paperSize);
-      await _dbHelper.saveSetting('bank_name', _bankNameController.text.trim().toUpperCase());
-      await _dbHelper.saveSetting('bank_account', _bankAccountController.text.trim());
-      await _dbHelper.saveSetting('bank_owner', _bankOwnerController.text.trim().toUpperCase());
+      // bank settings moved to web dashboard; do not save from mobile
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -120,13 +116,15 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
             hintText: hint,
             prefixIcon: Icon(icon),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
         if (helperText != null)
           Padding(
             padding: const EdgeInsets.only(left: 12, top: 4),
-            child: Text(helperText, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            child: Text(helperText,
+                style: const TextStyle(fontSize: 11, color: Colors.grey)),
           ),
       ],
     );
@@ -137,7 +135,8 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Cai dat quan', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text('Cai dat quan',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0.5,
         iconTheme: const IconThemeData(color: Colors.black87),
@@ -157,7 +156,9 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                   children: [
                     Icon(Icons.info_outline, color: Colors.blue),
                     SizedBox(width: 8),
-                    Text('Thong tin chung', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('Thong tin chung',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -183,38 +184,12 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                   keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: 32),
-                const Row(
-                  children: [
-                    Icon(Icons.qr_code_scanner, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Text('Cau hinh VietQR', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue)),
-                  ],
-                ),
+                // Bank account configuration has been moved to the web dashboard.
+                // Removed mobile inputs to avoid duplication and keep owner settings centralized.
                 const SizedBox(height: 16),
-                buildTextField(
-                  label: 'Ma ngan hang',
-                  hint: 'VD: VCB, MB, ICB',
-                  icon: Icons.account_balance,
-                  controller: _bankNameController,
-                  helperText: 'Dung ma viet tat Napas, vi du Vietcombank la VCB',
-                ),
-                const SizedBox(height: 12),
-                buildTextField(
-                  label: 'So tai khoan',
-                  hint: 'Nhap so tai khoan',
-                  icon: Icons.numbers,
-                  controller: _bankAccountController,
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 12),
-                buildTextField(
-                  label: 'Ten chu tai khoan',
-                  hint: 'Nhap ten khong dau',
-                  icon: Icons.person,
-                  controller: _bankOwnerController,
-                ),
-                const SizedBox(height: 32),
-                const Text('Du lieu va bao mat', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                const Text('Du lieu va bao mat',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -224,7 +199,8 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                     icon: const Icon(Icons.cloud_upload_outlined),
                     label: const Text('Sao luu du lieu (Backup)'),
                     style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -236,9 +212,11 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                         onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: const Text('Quay lai', style: TextStyle(fontSize: 16)),
+                        child: const Text('Quay lai',
+                            style: TextStyle(fontSize: 16)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -248,9 +226,14 @@ class _StoreSettingsScreenState extends State<StoreSettingsScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: const Text('Luu cai dat', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: const Text('Luu cai dat',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
