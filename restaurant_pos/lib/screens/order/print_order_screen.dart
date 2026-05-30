@@ -39,7 +39,9 @@ class _PrintOrderScreenState extends State<PrintOrderScreen> {
       data: trimmed,
       version: QrVersions.auto,
       gapless: true,
-      color: const Color(0xFF000000),
+      dataModuleStyle: const QrDataModuleStyle(color: Colors.black),
+      eyeStyle:
+          const QrEyeStyle(eyeShape: QrEyeShape.square, color: Colors.black),
     );
 
     const ui.ImageByteFormat format = ui.ImageByteFormat.png;
@@ -228,15 +230,16 @@ class _PrintOrderScreenState extends State<PrintOrderScreen> {
                                 borderRadius: BorderRadius.circular(14))),
                         onPressed: () async {
                           // Export QR (share PNG) for order lookup code
+                          final messenger = ScaffoldMessenger.of(context);
                           try {
                             await _exportQr(order);
                             if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            messenger.showSnackBar(
                               const SnackBar(content: Text('Đã xuất QR')),
                             );
                           } catch (e) {
                             if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            messenger.showSnackBar(SnackBar(
                                 content: Text('Xuất QR thất bại: $e')));
                           }
                         },
@@ -307,24 +310,43 @@ class _PrintOrderScreenState extends State<PrintOrderScreen> {
   Widget _buildDashedDivider() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final boxWidth = constraints.constrainWidth();
-          const dashWidth = 4.0;
-          final dashCount = (boxWidth / (2 * dashWidth)).floor();
-          return Flex(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            direction: Axis.horizontal,
-            children: List.generate(
-                dashCount,
-                (_) => const SizedBox(
-                    width: dashWidth,
-                    height: 1,
-                    child: DecoratedBox(
-                        decoration: BoxDecoration(color: Colors.grey)))),
-          );
-        },
+      child: SizedBox(
+        width: double.infinity,
+        height: 1,
+        child: CustomPaint(
+          painter: _DashedLinePainter(color: Colors.grey),
+        ),
       ),
     );
   }
+}
+
+class _DashedLinePainter extends CustomPainter {
+  final Color color;
+  static const double _dashWidth = 4.0;
+  static const double _dashSpace = 4.0;
+
+  _DashedLinePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = size.height
+      ..strokeCap = StrokeCap.round;
+
+    double startX = 0;
+    while (startX < size.width) {
+      final endX = startX + _dashWidth;
+      canvas.drawLine(
+        Offset(startX, size.height / 2),
+        Offset(endX.clamp(0.0, size.width), size.height / 2),
+        paint,
+      );
+      startX += _dashWidth + _dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
