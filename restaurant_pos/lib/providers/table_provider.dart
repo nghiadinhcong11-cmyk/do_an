@@ -18,7 +18,8 @@ class TableProvider with ChangeNotifier {
     _tableService = service;
   }
 
-  void initRealtime(String token, String restaurantId, {Function(Map<String, dynamic>)? onRequestReceived}) {
+  void initRealtime(String token, String restaurantId,
+      {Function(Map<String, dynamic>)? onRequestReceived}) {
     _signalRService?.stop();
     _signalRService = SignalRService(token, restaurantId);
     _signalRService!.initTableHub(
@@ -49,7 +50,13 @@ class TableProvider with ChangeNotifier {
 
   Future<void> fetchAndSetTables([String userId = 'admin']) async {
     _currentUserId = userId;
-    _tables = await _tableService.getTablesByUserId(userId);
+    try {
+      _tables = await _tableService.getTablesByUserId(userId);
+    } catch (e) {
+      // Fallback to local sqlite service when API fails or offline
+      _tableService = SqliteTableService();
+      _tables = await _tableService.getTablesByUserId(userId);
+    }
     notifyListeners();
   }
 
@@ -62,7 +69,7 @@ class TableProvider with ChangeNotifier {
   Future<void> updateTableStatus(String id, TableStatus newStatus) async {
     if (_currentUserId == null) return;
     await _tableService.updateTableStatus(_currentUserId!, id, newStatus);
-    
+
     final index = _tables.indexWhere((table) => table.id == id);
     if (index != -1) {
       final oldTable = _tables[index];

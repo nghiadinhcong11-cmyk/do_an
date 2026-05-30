@@ -5,6 +5,7 @@ import '../../core/utils/app_format.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/table_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../database/database_helper.dart';
 import '../../models/order.dart';
 import '../../models/order_item.dart';
 import '../../services/api/api_order_service.dart';
@@ -24,6 +25,17 @@ class OrderScreen extends StatefulWidget {
 
 class _OrderScreenState extends State<OrderScreen> {
   bool _isProcessing = false;
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load persisted cart for this table
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      cartProvider.loadCart(widget.tableId);
+    });
+  }
 
   Future<void> _processFinalPayment(CartProvider cartProvider) async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
@@ -90,8 +102,28 @@ class _OrderScreenState extends State<OrderScreen> {
     }
   }
 
-  Future<bool?> _showPaymentQRDialog(AuthProvider auth, double amount) {
-    if (auth.bankAccountNumber == null || auth.bankCode == null) {
+  Future<bool?> _showPaymentQRDialog(AuthProvider auth, double amount) async {
+    String? bankCode = auth.bankCode;
+    String? bankAccount = auth.bankAccountNumber;
+    String? bankOwner = auth.bankAccountName;
+
+    // Fallback to local settings if auth doesn't have bank info
+    try {
+      if (bankCode == null) {
+        final v = await _dbHelper.getSetting('bank_name', '');
+        if (v.isNotEmpty) bankCode = v;
+      }
+      if (bankAccount == null) {
+        final v = await _dbHelper.getSetting('bank_account', '');
+        if (v.isNotEmpty) bankAccount = v;
+      }
+      if (bankOwner == null) {
+        final v = await _dbHelper.getSetting('bank_owner', '');
+        if (v.isNotEmpty) bankOwner = v;
+      }
+    } catch (_) {}
+
+    if (bankAccount == null || bankCode == null) {
       return showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -110,11 +142,8 @@ class _OrderScreenState extends State<OrderScreen> {
       );
     }
 
-    // VietQR format: https://vietqr.io/danh-sach-api/api-tao-ma-qr-thanh-toan/
-    // However, the standard is usually a more complex EMVCo string.
-    // For simplicity, we can use a direct image URL or a standard text format.
     final String vietQrUrl =
-        'https://img.vietqr.io/image/${auth.bankCode}-${auth.bankAccountNumber}-compact.png?amount=${amount.toInt()}&addInfo=Thanh%20toan%20${widget.tableName}&accountName=${auth.bankAccountName}';
+        'https://img.vietqr.io/image/${bankCode}-${bankAccount}-compact.png?amount=${amount.toInt()}&addInfo=Thanh%20toan%20${widget.tableName}&accountName=${Uri.encodeComponent(bankOwner ?? '')}';
 
     return showDialog<bool>(
       context: context,
@@ -146,9 +175,9 @@ class _OrderScreenState extends State<OrderScreen> {
                     fontWeight: FontWeight.bold,
                     color: Colors.redAccent)),
             const SizedBox(height: 8),
-            Text('STK: ${auth.bankAccountNumber}',
+            Text('STK: $bankAccount',
                 style: const TextStyle(fontWeight: FontWeight.w500)),
-            Text('Ngân hàng: ${auth.bankCode}',
+            Text('Ngân hàng: $bankCode',
                 style: const TextStyle(color: Colors.grey)),
           ],
         ),
