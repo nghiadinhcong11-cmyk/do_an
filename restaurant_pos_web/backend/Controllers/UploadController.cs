@@ -21,7 +21,8 @@ public class UploadController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
 
-        var uploadsFolder = Path.Combine(_environment.WebRootPath ?? "wwwroot", "uploads");
+        // Dùng ContentRootPath để đảm bảo đường dẫn tuyệt đối trong Docker/Render
+        var uploadsFolder = Path.Combine(_environment.ContentRootPath, "wwwroot", "uploads");
         if (!Directory.Exists(uploadsFolder))
             Directory.CreateDirectory(uploadsFolder);
 
@@ -33,7 +34,7 @@ public class UploadController : ControllerBase
             await file.CopyToAsync(stream);
         }
 
-        // Tạo URL tuyệt đối dựa trên domain hiện tại
+        // Tạo URL tuyệt đối chuẩn HTTPS
         var host = Request.Host.Value;
         var scheme = Request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? (Request.IsHttps ? "https" : "http");
         var imageUrl = $"{scheme}://{host}/uploads/{fileName}";

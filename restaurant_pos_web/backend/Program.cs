@@ -99,6 +99,13 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
+// Đảm bảo thư mục uploads tồn tại để không bị lỗi 404
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
 if (!app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
@@ -107,7 +114,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("FrontendPolicy");
+
+// Cấu hình Static Files để truy cập được ảnh qua URL
 app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
