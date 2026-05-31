@@ -115,7 +115,14 @@ if (!app.Environment.IsDevelopment())
 
 app.UseCors("FrontendPolicy");
 
-// Cấu hình Static Files để truy cập được ảnh qua URL
+// Cấu hình Static Files cho thư mục uploads
+var fileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = fileProvider,
+    RequestPath = "/uploads"
+});
+
 app.UseStaticFiles();
 
 app.UseAuthentication();
