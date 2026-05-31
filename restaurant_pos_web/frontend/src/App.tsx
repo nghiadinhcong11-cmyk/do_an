@@ -16,7 +16,7 @@ import RestaurantProfilePage from "./pages/RestaurantProfilePage";
 import CustomerDashboard from "./pages/CustomerDashboard";
 import CategoriesPage from "./pages/CategoriesPage";
 import { getCurrentRole } from "./api/authStorage";
-鼓
+
 export default function App() {
   const role = getCurrentRole();
 

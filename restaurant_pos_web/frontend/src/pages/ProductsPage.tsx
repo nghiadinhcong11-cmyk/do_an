@@ -194,7 +194,7 @@ export default function ProductsPage() {
                       <p className="text-slate-400 text-xs line-clamp-2 mb-6 h-8 italic text-center px-2">
                         {p.description || "Không có mô tả chi tiết."}
                       </p>
-鼓
+
                       <div className="mt-auto space-y-4">
                         <div className="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
                           <label className="flex items-center gap-2 cursor-pointer">
@@ -308,9 +308,30 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Danh mục</label>
-                  <input className="w-full border-2 border-slate-50 rounded-xl px-4 py-3 focus:border-blue-500 outline-none bg-slate-50 focus:bg-white transition-all" value={editingProduct?.category || ""} onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })} />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Danh mục *</label>
+                    <select
+                      className="w-full border-2 border-slate-50 rounded-xl px-4 py-3 focus:border-blue-500 outline-none bg-slate-50 focus:bg-white transition-all font-bold text-sm"
+                      value={editingProduct?.categoryId || ""}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, categoryId: e.target.value })}
+                      required
+                    >
+                      <option value="">Chọn danh mục</option>
+                      {categories.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Đơn vị tính</label>
+                    <input
+                      className="w-full border-2 border-slate-50 rounded-xl px-4 py-3 focus:border-blue-500 outline-none bg-slate-50 focus:bg-white transition-all font-bold"
+                      placeholder="Ly, Đĩa, Suất..."
+                      value={editingProduct?.unit || ""}
+                      onChange={(e) => setEditingProduct({ ...editingProduct, unit: e.target.value })}
+                    />
+                  </div>
                 </div>
 
                 <div className="pt-6">
