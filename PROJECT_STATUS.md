@@ -24,7 +24,6 @@ Tài liệu này tóm tắt toàn bộ cấu trúc và các tính năng đã ho�
 - [x] **CORS & Proxy:** Cấu hình chuẩn để chạy trên Render (Forwarded Headers).
 
 ### 2. Web Frontend (Quản trị)
-- [x] **Đăng ký/Đăng nhập:** Hỗ trợ tạo Admin bằng mã bí mật `FOKA@ADMIN`.
 - [x] **Duyệt Nhà hàng:** Admin tổng xem hồ sơ và phê duyệt quán mới.
 - [x] **Dashboard Chủ quán:** Biểu đồ doanh thu 7 ngày, Top món bán chạy, Thống kê tổng quát.
 - [x] **Quản lý Thực đơn:** Nhóm theo danh mục, tìm kiếm, tải ảnh từ máy, thêm mô tả, đơn vị tính.
