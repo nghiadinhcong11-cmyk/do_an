@@ -42,9 +42,9 @@ Tài liệu này tóm tắt toàn bộ cấu trúc và các tính năng đã ho�
 - [x] **Điều hướng:** Đã fix lỗi kẹt ở màn hình Profile/History, thêm Drawer Menu.
 
 ## 🔑 Thông tin quan trọng (Internal Info)
-- **Cơ chế tạo Super Admin:** Sử dụng mã bí mật khi đăng ký trên Web (Mã này nên được cấu hình trong Environment Variables).
+- **Cơ chế tạo Super Admin:** Chỉ có thể khởi tạo trực tiếp trong Database bằng SQL (an toàn tuyệt đối) hoặc do Admin hiện tại tạo ra.
 - **Luồng gọi món:** Khách quét QR -> Web Menu -> Gửi Request -> App Staff nhận -> Xác nhận -> Vào bàn -> Thanh toán -> Bàn tự động về Trống.
-鼓
+
 ## 📝 Lưu ý cho AI tiếp theo
 - Khi cập nhật Database, luôn sử dụng lệnh `dotnet ef migrations add <Name>` và đảm bảo có `db.Database.Migrate()` trong `Program.cs`.
 - Ảnh sản phẩm được lưu vật lý trên Server. Trên Render (bản free), ảnh sẽ mất khi server restart (Ephemeral FS).

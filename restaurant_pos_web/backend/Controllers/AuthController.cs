@@ -37,15 +37,11 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
         var callerRole = User.FindFirstValue(ClaimTypes.Role)?.ToLowerInvariant();
         var isAdminCaller = callerRole == UserRoles.Admin;
 
-        // Đọc mã bí mật từ cấu hình hệ thống (Environment Variable)
-        var systemAdminCode = configuration["AppSettings:AdminActivationCode"] ?? "PROTECTED_CODE";
-        var isValidAdminCode = !string.IsNullOrEmpty(request.AdminCode) && request.AdminCode == systemAdminCode;
-
-        if (requestedRole == UserRoles.Admin && !isAdminCaller && !isValidAdminCode)
-鼓        {
+        if (requestedRole == UserRoles.Admin && !isAdminCaller)
+        {
             return Forbid();
         }
-
+鼓
         var restaurantId = string.IsNullOrWhiteSpace(request.RestaurantId)
             ? Guid.NewGuid().ToString("N")
             : request.RestaurantId.Trim();
