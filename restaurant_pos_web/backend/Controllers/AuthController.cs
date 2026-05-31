@@ -96,7 +96,8 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
             return StatusCode(500, new { error = "Lỗi máy chủ: " + ex.Message, detail = ex.InnerException?.Message });
         }
     }
-鼓    [HttpPost("login")]
+
+    [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
         var username = request.Username.Trim();
