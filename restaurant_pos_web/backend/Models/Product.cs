@@ -11,7 +11,8 @@ public class Product
     public string? Description { get; set; }
     public decimal Price { get; set; }
     public decimal CostPrice { get; set; }
-    public string? Category { get; set; }
+    public string? Unit { get; set; }
+    public string? CategoryId { get; set; }
     public string? ImageUrl { get; set; }
     public bool IsVisibleToStaff { get; set; } = true;
     public bool IsAvailable { get; set; } = true;

@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<RevenueEntry> RevenueEntries => Set<RevenueEntry>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Category> Categories => Set<Category>();
     public DbSet<RestaurantTable> Tables => Set<RestaurantTable>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
@@ -57,6 +58,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasIndex(p => p.RestaurantId);
             entity.Property(p => p.Price).HasPrecision(18, 2);
             entity.Property(p => p.CostPrice).HasPrecision(18, 2);
+
+            entity.HasOne<Category>()
+                .WithMany()
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasIndex(c => c.RestaurantId);
         });
 
         modelBuilder.Entity<RestaurantTable>(entity =>

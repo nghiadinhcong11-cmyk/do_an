@@ -22,9 +22,9 @@ public class PublicController(AppDbContext dbContext, IHubContext<TableHub> hubC
 
         var products = await dbContext.Products
             .Where(p => p.RestaurantId == restaurantId && p.IsVisibleToStaff && p.IsAvailable)
-            .OrderBy(p => p.Category)
+            .OrderBy(p => p.CategoryId)
             .ThenBy(p => p.Name)
-            .Select(p => new { p.Id, p.Name, p.Price, p.Category, p.ImageUrl, p.IsBestSeller })
+            .Select(p => new { p.Id, p.Name, p.Price, p.CategoryId, p.ImageUrl, p.IsBestSeller, p.Description, p.Unit })
             .ToListAsync();
 
         return Ok(new { restaurantName = restaurant.Name, products });
@@ -46,7 +46,6 @@ public class PublicController(AppDbContext dbContext, IHubContext<TableHub> hubC
         await dbContext.SaveChangesAsync();
 
         // Notify Staff via SignalR
-        // We use the restaurantId group
         await hubContext.Clients.Group($"restaurant:{request.RestaurantId}")
             .SendAsync("requestReceived", request);
 
