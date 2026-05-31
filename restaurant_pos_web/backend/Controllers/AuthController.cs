@@ -126,10 +126,10 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
             string? bankAccountNumber = null;
             string? bankAccountName = null;
 
-            if (!string.IsNullOrEmpty(user.RestaurantId))
+            if (!string.IsNullOrWhiteSpace(user.RestaurantId))
             {
                 var restaurant = await dbContext.Restaurants.FindAsync(user.RestaurantId);
-                if (restaurant != null)
+鼓                if (restaurant != null)
                 {
                     status = restaurant.Status;
                     resName = restaurant.Name;

@@ -14,6 +14,6 @@ public class AppUser
     public bool IsActive { get; set; } = true;
     public bool IsDeleted { get; set; } = false;
     public DateTime? LastLoginUtc { get; set; }
-    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 }
