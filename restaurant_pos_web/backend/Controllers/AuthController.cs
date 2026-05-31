@@ -7,88 +7,96 @@ using RestaurantPos.Api.Models;
 using RestaurantPos.Api.Security;
 using RestaurantPos.Api.Services;
 
+using Microsoft.Extensions.Configuration;
+
 namespace RestaurantPos.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenService) : ControllerBase
+public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenService, IConfiguration configuration) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
-        var username = request.Username.Trim();
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(request.Password))
+        try
         {
-            return BadRequest("Username and password are required.");
-        }
-
-        var exists = await dbContext.Users.AnyAsync(x => x.Username == username);
-        if (exists)
-        {
-            return Conflict("Username already exists.");
-        }
-
-        var requestedRole = (request.Role ?? UserRoles.Owner).Trim().ToLowerInvariant();
-        if (!UserRoles.All.Contains(requestedRole))
-        {
-            return BadRequest("Invalid role.");
-        }
-
-        var callerRole = User.FindFirstValue(ClaimTypes.Role)?.ToLowerInvariant();
-        var isAdminCaller = callerRole == UserRoles.Admin;
-
-        if (requestedRole == UserRoles.Admin && !isAdminCaller)
-        {
-            return Forbid();
-        }
-
-        var restaurantId = string.IsNullOrWhiteSpace(request.RestaurantId)
-            ? Guid.NewGuid().ToString("N")
-            : request.RestaurantId.Trim();
-
-        if (requestedRole == UserRoles.Owner && string.IsNullOrWhiteSpace(request.RestaurantId))
-        {
-            var restaurant = new Restaurant
+            var username = request.Username.Trim();
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(request.Password))
             {
-                Id = restaurantId,
-                Name = request.RestaurantName ?? $"{username}'s Restaurant",
-                OwnerUserId = username,
-                Status = "Pending"
+                return BadRequest("Username and password are required.");
+            }
+
+            var exists = await dbContext.Users.AnyAsync(x => x.Username == username);
+            if (exists)
+            {
+                return Conflict("Tên đăng nhập đã tồn tại.");
+            }
+
+            var requestedRole = (request.Role ?? UserRoles.Owner).Trim().ToLowerInvariant();
+            if (!UserRoles.All.Contains(requestedRole))
+            {
+                return BadRequest("Vai trò không hợp lệ.");
+            }
+
+            var callerRole = User.FindFirstValue(ClaimTypes.Role)?.ToLowerInvariant();
+            var isAdminCaller = callerRole == UserRoles.Admin;
+
+            if (requestedRole == UserRoles.Admin && !isAdminCaller)
+            {
+                return Forbid();
+            }
+
+            var restaurantId = string.IsNullOrWhiteSpace(request.RestaurantId)
+                ? Guid.NewGuid().ToString("N")
+                : request.RestaurantId.Trim();
+
+            if (requestedRole == UserRoles.Owner && string.IsNullOrWhiteSpace(request.RestaurantId))
+            {
+                var restaurant = new Restaurant
+                {
+                    Id = restaurantId,
+                    Name = request.RestaurantName ?? $"{username}'s Restaurant",
+                    OwnerUserId = username,
+                    Status = "Pending"
+                };
+                dbContext.Restaurants.Add(restaurant);
+            }
+
+            var user = new AppUser
+            {
+                Username = username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Role = requestedRole,
+                RestaurantId = restaurantId,
+                BranchId = string.IsNullOrWhiteSpace(request.BranchId) ? null : request.BranchId.Trim()
             };
-            dbContext.Restaurants.Add(restaurant);
+
+            dbContext.Users.Add(user);
+            await dbContext.SaveChangesAsync();
+
+            var token = jwtTokenService.GenerateToken(user);
+            var resObj = await dbContext.Restaurants.FindAsync(user.RestaurantId);
+            var status = resObj?.Status ?? "Approved";
+            var resName = resObj?.Name;
+
+            return Ok(new AuthResponse(
+                token,
+                user.Username,
+                user.Role,
+                user.RestaurantId,
+                resName,
+                user.BranchId,
+                status,
+                resObj?.BankCode,
+                resObj?.BankAccountNumber,
+                resObj?.BankAccountName));
         }
-
-        var user = new AppUser
+        catch (Exception ex)
         {
-            Username = username,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Role = requestedRole,
-            RestaurantId = restaurantId,
-            BranchId = string.IsNullOrWhiteSpace(request.BranchId) ? null : request.BranchId.Trim()
-        };
-
-        dbContext.Users.Add(user);
-        await dbContext.SaveChangesAsync();
-
-        var token = jwtTokenService.GenerateToken(user);
-        var resObj = await dbContext.Restaurants.FindAsync(user.RestaurantId);
-        var status = resObj?.Status ?? "Approved";
-        var resName = resObj?.Name;
-
-        return Ok(new AuthResponse(
-            token,
-            user.Username,
-            user.Role,
-            user.RestaurantId,
-            resName,
-            user.BranchId,
-            status,
-            resObj?.BankCode,
-            resObj?.BankAccountNumber,
-            resObj?.BankAccountName));
+            return StatusCode(500, new { error = "Lỗi máy chủ: " + ex.Message, detail = ex.InnerException?.Message });
+        }
     }
-
-    [HttpPost("login")]
+鼓    [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
         var username = request.Username.Trim();

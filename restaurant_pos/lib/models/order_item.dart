@@ -1,69 +1,47 @@
-import 'product.dart';
-
 class OrderItem {
-  final Product product;
-  int quantity;
-  final double? price;
+  final int id;
+  final String orderId;
+  final String productId;
+  final String? productName;
+  final double unitPrice;
+  final int quantity;
+  final double lineTotal;
+  final String? notes;
 
   OrderItem({
-    required this.product,
-    this.quantity = 1,
-    this.price,
+    required this.id,
+    required this.orderId,
+    required this.productId,
+    this.productName,
+    required this.unitPrice,
+    required this.quantity,
+    required this.lineTotal,
+    this.notes,
   });
 
-  double get unitPrice => price ?? product.price;
-  double get total => unitPrice * quantity;
-
-  factory OrderItem.fromJson(
-      Map<String, dynamic> json, List<Product> products) {
-    final productId = json['productId'] ??
-        json['product_id'] ??
-        json['ProductId'] ??
-        json['Product_Id'];
-    final product = products.firstWhere(
-      (p) => p.id == productId,
-      orElse: () => Product(
-          id: productId?.toString() ?? 'unknown',
-          name: 'Unknown',
-          price: (json['price'] ?? json['Price'] as num?)?.toDouble() ?? 0.0),
-    );
-
-    // Robust quantity parsing: accept camelCase or PascalCase from backend
-    final qVal =
-        json['quantity'] ?? json['Quantity'] ?? json['qty'] ?? json['Qty'];
-    int qty = 0;
-    if (qVal == null) {
-      qty = 0;
-    } else if (qVal is int) {
-      qty = qVal;
-    } else if (qVal is num) {
-      qty = qVal.toInt();
-    } else {
-      qty = int.tryParse(qVal.toString()) ?? 0;
-    }
-
-    final pVal = json['price'] ?? json['Price'];
-    double? parsedPrice;
-    if (pVal != null) {
-      if (pVal is num) {
-        parsedPrice = pVal.toDouble();
-      } else {
-        parsedPrice = double.tryParse(pVal.toString()) ?? 0.0;
-      }
-    }
-
+  factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
-      product: product,
-      quantity: qty,
-      price: parsedPrice,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      orderId: json['orderId']?.toString() ?? '',
+      productId: json['productId']?.toString() ?? '',
+      productName: json['productName'],
+      unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
+      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+      lineTotal: (json['lineTotal'] as num?)?.toDouble() ?? 0.0,
+      notes: json['notes'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'productId': product.id,
+      'id': id,
+      'orderId': orderId,
+      'productId': productId,
+      'productName': productName,
+      'unitPrice': unitPrice,
       'quantity': quantity,
-      'price': unitPrice,
+      'lineTotal': lineTotal,
+      'notes': notes,
     };
   }
 }

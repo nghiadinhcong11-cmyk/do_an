@@ -16,7 +16,7 @@ public record AuthResponse(
     string Token,
     string Username,
     string Role,
-    string RestaurantId,
+    string? RestaurantId,
     string? RestaurantName,
     string? BranchId,
     string? RestaurantStatus = "Approved",
@@ -26,5 +26,5 @@ public record AuthResponse(
 );
 
 public record CreateRevenueRequest(decimal Amount, string Note);
-public record RevenueResponse(int Id, decimal Amount, string Note, DateTime CreatedAtUtc, string CreatedBy, string RestaurantId, string? BranchId);
-public record UserSummaryResponse(int Id, string Username, string Role, string RestaurantId, string? BranchId);
+public record RevenueResponse(int Id, decimal Amount, string Note, DateTime CreatedAtUtc, string CreatedBy, string? RestaurantId, string? BranchId);
+public record UserSummaryResponse(int Id, string Username, string Role, string? RestaurantId, string? BranchId);

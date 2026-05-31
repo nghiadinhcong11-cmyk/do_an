@@ -94,12 +94,12 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(AuthPolicies.StaffOrAbove, p => p.RequireRole(UserRoles.Admin, UserRoles.Owner, UserRoles.Staff));
 });
 
-// Nới lỏng CORS tối đa cho mục đích demo
+// Nới lỏng CORS tối đa cho mục đích debug
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.WithOrigins("https://do-an-1-54a3.onrender.com")
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -120,7 +120,14 @@ if (!app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Migration failed but continuing: " + ex.Message);
+    }
 }
 
 app.UseCors("FrontendPolicy");
