@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
-import { getCurrentRole } from "../api/authStorage";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell
+  LineChart, Line, XAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 
 type SummaryStats = {
@@ -28,7 +26,6 @@ export default function DashboardPage() {
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const role = getCurrentRole();
   const username = localStorage.getItem("username");
 
   useEffect(() => {

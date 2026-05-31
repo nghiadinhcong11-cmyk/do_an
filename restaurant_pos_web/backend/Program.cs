@@ -8,7 +8,17 @@ using RestaurantPos.Api.Hubs;
 using RestaurantPos.Api.Security;
 using RestaurantPos.Api.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = Directory.GetCurrentDirectory()
+});
+
+// Vô hiệu hóa reload on change để tránh lỗi inotify trên Render
+foreach (var source in builder.Configuration.Sources.OfType<Microsoft.Extensions.Configuration.Json.JsonConfigurationSource>())
+{
+    source.ReloadOnChange = false;
+}
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "80";
 builder.WebHost.UseUrls($"http://*:{port}");
