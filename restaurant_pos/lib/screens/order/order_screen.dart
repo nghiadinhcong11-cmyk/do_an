@@ -123,7 +123,7 @@ class _OrderScreenState extends State<OrderScreen> {
       );
     }
 
-    final String vietQrUrl = 'https://img.vietqr.io/image/$bankCode-$bankAccount-compact.png?amount=${amount.toInt()}&addInfo=Thanh%20toan%20${widget.tableName}&accountName=${Uri.encodeComponent(bankOwner ?? '')}';
+    final String vietQrUrl = 'https://img.vietqr.io/image/$bankCode-$bankAccount-compact.png?amount=${amount.toInt()}&addInfo=Thanh%20toan%20${Uri.encodeComponent(widget.tableName)}&accountName=${Uri.encodeComponent(bankOwner ?? '')}';
 
     return showDialog<bool>(
       context: context,
@@ -140,13 +140,26 @@ class _OrderScreenState extends State<OrderScreen> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.grey.shade200),
               ),
-              child: QrImageView(
-                data: vietQrUrl,
-                version: QrVersions.auto,
-                size: 200.0,
+              child: Image.network(
+                vietQrUrl,
+                width: 250,
+                height: 250,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const SizedBox(
+                    width: 250,
+                    height: 250,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) => const SizedBox(
+                  width: 250,
+                  height: 250,
+                  child: Center(child: Text('Lỗi tải mã QR', style: TextStyle(color: Colors.red))),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+鼓           const SizedBox(height: 16),
             Text(AppFormat.money(amount), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.redAccent)),
             const SizedBox(height: 8),
             Text('STK: $bankAccount', style: const TextStyle(fontWeight: FontWeight.w500)),

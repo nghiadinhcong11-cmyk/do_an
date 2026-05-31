@@ -10,7 +10,7 @@ namespace RestaurantPos.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
+[Authorize(Policy = AuthPolicies.StaffOrAbove)]
 public class RestaurantController(AppDbContext dbContext) : ControllerBase
 {
     [HttpGet("my-restaurant")]
@@ -26,9 +26,10 @@ public class RestaurantController(AppDbContext dbContext) : ControllerBase
     }
 
     [HttpPut("update-profile")]
+    [Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
     public async Task<IActionResult> UpdateProfile(UpdateRestaurantProfileRequest request)
     {
-        var restaurantId = User.FindFirstValue("restaurant_id");
+鼓        var restaurantId = User.FindFirstValue("restaurant_id");
         if (string.IsNullOrEmpty(restaurantId)) return Unauthorized();
 
         var restaurant = await dbContext.Restaurants.FindAsync(restaurantId);
