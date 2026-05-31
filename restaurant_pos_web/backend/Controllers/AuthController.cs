@@ -41,7 +41,7 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
         {
             return Forbid();
         }
-鼓
+
         var restaurantId = string.IsNullOrWhiteSpace(request.RestaurantId)
             ? Guid.NewGuid().ToString("N")
             : request.RestaurantId.Trim();
