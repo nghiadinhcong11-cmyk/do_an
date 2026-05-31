@@ -94,12 +94,21 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
     {
         var username = request.Username.Trim();
         var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
+
         if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
-            return Unauthorized("Invalid credentials.");
+            return Unauthorized("Tên đăng nhập hoặc mật khẩu không chính xác.");
+        }
+
+        if (!user.IsActive)
+        {
+            return BadRequest("Tài khoản hiện đang bị khóa.");
         }
 
         var token = jwtTokenService.GenerateToken(user);
+
+        user.LastLoginUtc = DateTime.UtcNow;
+        await dbContext.SaveChangesAsync();
 
         string status = "Approved";
         string? resName = null;
