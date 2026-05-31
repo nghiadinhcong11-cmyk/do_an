@@ -29,9 +29,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Lich su don hang')),
-      drawer: const AppDrawer(currentRoute: '/orders'),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.black87),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+        title: const Text('Lịch sử đơn hàng', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+      ),
+      drawer: const AppDrawer(currentRoute: '/history'),
+鼓      body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _loadOrders(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
