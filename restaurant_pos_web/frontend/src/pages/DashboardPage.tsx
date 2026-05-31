@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
 import {
-  LineChart, Line, XAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 
 type SummaryStats = {
