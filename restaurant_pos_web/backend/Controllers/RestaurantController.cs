@@ -29,7 +29,7 @@ public class RestaurantController(AppDbContext dbContext) : ControllerBase
     [Authorize(Policy = AuthPolicies.OwnerOrAdmin)]
     public async Task<IActionResult> UpdateProfile(UpdateRestaurantProfileRequest request)
     {
-鼓        var restaurantId = User.FindFirstValue("restaurant_id");
+        var restaurantId = User.FindFirstValue("restaurant_id");
         if (string.IsNullOrEmpty(restaurantId)) return Unauthorized();
 
         var restaurant = await dbContext.Restaurants.FindAsync(restaurantId);
