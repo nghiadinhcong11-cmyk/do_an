@@ -129,7 +129,7 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
             if (!string.IsNullOrWhiteSpace(user.RestaurantId))
             {
                 var restaurant = await dbContext.Restaurants.FindAsync(user.RestaurantId);
-鼓                if (restaurant != null)
+                if (restaurant != null)
                 {
                     status = restaurant.Status;
                     resName = restaurant.Name;
