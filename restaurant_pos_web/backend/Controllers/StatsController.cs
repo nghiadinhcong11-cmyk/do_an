@@ -65,4 +65,27 @@ public class StatsController(AppDbContext dbContext) : ControllerBase
 
         return Ok(topProducts);
     }
+
+    [HttpGet("summary")]
+    public async Task<IActionResult> GetSummary()
+    {
+        var restaurantId = User.FindFirstValue("restaurant_id");
+        if (string.IsNullOrWhiteSpace(restaurantId)) return Unauthorized();
+
+        var today = DateTime.UtcNow.Date;
+
+        var todayRevenue = await dbContext.Orders
+            .Where(o => o.RestaurantId == restaurantId && o.DateTimeUtc >= today)
+            .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
+
+        var todayOrders = await dbContext.Orders
+            .Where(o => o.RestaurantId == restaurantId && o.DateTimeUtc >= today)
+            .CountAsync();
+
+        var totalProducts = await dbContext.Products
+            .Where(p => p.RestaurantId == restaurantId)
+            .CountAsync();
+
+        return Ok(new { todayRevenue, todayOrders, totalProducts });
+    }
 }
