@@ -156,4 +156,4 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
             return StatusCode(500, new { error = "Lỗi đăng nhập hệ thống", detail = ex.Message, inner = ex.InnerException?.Message });
         }
     }
-
+}
