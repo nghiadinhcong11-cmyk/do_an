@@ -21,8 +21,8 @@ public class StatsController(AppDbContext dbContext) : ControllerBase
         var startDate = DateTime.UtcNow.Date.AddDays(-6);
 
         var stats = await dbContext.Orders
-            .Where(o => o.RestaurantId == restaurantId && o.DateTimeUtc >= startDate)
-            .GroupBy(o => o.DateTimeUtc.Date)
+            .Where(o => o.RestaurantId == restaurantId && o.CreatedAtUtc >= startDate)
+            .GroupBy(o => o.CreatedAtUtc.Date)
             .Select(g => new
             {
                 Date = g.Key,
@@ -75,11 +75,11 @@ public class StatsController(AppDbContext dbContext) : ControllerBase
         var today = DateTime.UtcNow.Date;
 
         var todayRevenue = await dbContext.Orders
-            .Where(o => o.RestaurantId == restaurantId && o.DateTimeUtc >= today)
+            .Where(o => o.RestaurantId == restaurantId && o.CreatedAtUtc >= today)
             .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
 
         var todayOrders = await dbContext.Orders
-            .Where(o => o.RestaurantId == restaurantId && o.DateTimeUtc >= today)
+            .Where(o => o.RestaurantId == restaurantId && o.CreatedAtUtc >= today)
             .CountAsync();
 
         var totalProducts = await dbContext.Products

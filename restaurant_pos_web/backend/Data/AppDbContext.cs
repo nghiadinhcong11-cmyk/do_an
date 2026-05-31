@@ -38,7 +38,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<Restaurant>(entity =>
         {
-            entity.HasIndex(r => r.OwnerId);
+            entity.HasIndex(r => r.OwnerUserId);
         });
 
         modelBuilder.Entity<Branch>(entity =>
@@ -86,7 +86,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
-            entity.Property(oi => oi.Price).HasPrecision(18, 2);
+            entity.Property(oi => oi.UnitPrice).HasPrecision(18, 2);
         });
 
         modelBuilder.Entity<Expense>(entity =>

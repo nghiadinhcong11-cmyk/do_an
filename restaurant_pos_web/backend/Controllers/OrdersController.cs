@@ -22,7 +22,7 @@ public class OrdersController(AppDbContext dbContext) : ControllerBase
         return await dbContext.Orders
             .Include(o => o.Items)
             .Where(o => o.RestaurantId == restaurantId)
-            .OrderByDescending(o => o.DateTimeUtc)
+            .OrderByDescending(o => o.CreatedAtUtc)
             .ToListAsync();
     }
 
@@ -42,7 +42,6 @@ public class OrdersController(AppDbContext dbContext) : ControllerBase
         {
             item.OrderId = order.Id;
 
-            // LOGIC: Trừ kho dựa trên định mức (Recipe)
             var recipe = await dbContext.ProductIngredients
                 .Where(pi => pi.ProductId == item.ProductId)
                 .ToListAsync();

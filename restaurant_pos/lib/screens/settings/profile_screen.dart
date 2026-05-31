@@ -19,14 +19,16 @@ class ProfileScreen extends StatelessWidget {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
-        title: const Text('Tài khoản cá nhân', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+        title: const Text('Tài khoản cá nhân',
+            style:
+                TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0.5,
         centerTitle: true,
       ),
       drawer: const AppDrawer(currentRoute: '/profile'),
       body: SingleChildScrollView(
-鼓        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
             const SizedBox(height: 20),
@@ -53,14 +55,18 @@ class ProfileScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () {
                   auth.logout();
-                  Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil('/', (route) => false);
                 },
                 icon: const Icon(Icons.logout),
-                label: const Text('Đăng xuất', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                label: const Text('Đăng xuất',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade600,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
               ),
@@ -89,12 +95,15 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildInfoRow(Icons.badge_outlined, 'Mã định danh', auth.userId ?? 'N/A'),
+          _buildInfoRow(
+              Icons.badge_outlined, 'Mã định danh', auth.userId ?? 'N/A'),
           const Divider(height: 24),
-          _buildInfoRow(Icons.restaurant_outlined, 'Mã nhà hàng', auth.restaurantId ?? 'N/A'),
+          _buildInfoRow(Icons.restaurant_outlined, 'Mã nhà hàng',
+              auth.restaurantId ?? 'N/A'),
           if (auth.branchId != null) ...[
             const Divider(height: 24),
-            _buildInfoRow(Icons.location_city_outlined, 'Chi nhánh', auth.branchId!),
+            _buildInfoRow(
+                Icons.location_city_outlined, 'Chi nhánh', auth.branchId!),
           ],
         ],
       ),
@@ -109,8 +118,11 @@ class ProfileScreen extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+            Text(label,
+                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(value,
+                style:
+                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
           ],
         ),
       ],

@@ -53,7 +53,7 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
             {
                 Id = restaurantId,
                 Name = request.RestaurantName ?? $"{username}'s Restaurant",
-                OwnerId = username,
+                OwnerUserId = username,
                 Status = "Pending"
             };
             dbContext.Restaurants.Add(restaurant);
