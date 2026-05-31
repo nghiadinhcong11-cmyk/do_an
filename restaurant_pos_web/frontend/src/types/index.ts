@@ -26,11 +26,20 @@ export type Product = {
   description?: string;
   price: number;
   costPrice: number;
-  category: string;
+  unit?: string;
+  categoryId?: string;
   imageUrl?: string;
   isVisibleToStaff: boolean;
   isAvailable: boolean;
   isBestSeller: boolean;
+};
+
+export type Category = {
+  id: string;
+  restaurantId: string;
+  name: string;
+  displayOrder: number;
+  isActive: boolean;
 };
 
 export type Branch = {

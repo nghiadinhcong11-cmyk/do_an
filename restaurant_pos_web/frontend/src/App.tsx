@@ -14,8 +14,9 @@ import SystemAdminPage from "./pages/SystemAdminPage";
 import PublicMenuPage from "./pages/PublicMenuPage";
 import RestaurantProfilePage from "./pages/RestaurantProfilePage";
 import CustomerDashboard from "./pages/CustomerDashboard";
+import CategoriesPage from "./pages/CategoriesPage";
 import { getCurrentRole } from "./api/authStorage";
-
+鼓
 export default function App() {
   const role = getCurrentRole();
 
@@ -36,6 +37,7 @@ export default function App() {
           {/* Owner Routes */}
           <Route element={<ProtectedRoute allowedRoles={["admin", "owner"]} />}>
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/branches" element={<BranchesPage />} />
             <Route path="/tables" element={<TablesPage />} />
             <Route path="/inventory" element={<InventoryPage />} />

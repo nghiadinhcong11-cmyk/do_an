@@ -100,9 +100,25 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
         }
 
         var token = jwtTokenService.GenerateToken(user);
-        var restaurant = await dbContext.Restaurants.FindAsync(user.RestaurantId);
-        var status = restaurant?.Status ?? "Approved";
-        var resName = restaurant?.Name;
+
+        string status = "Approved";
+        string? resName = null;
+        string? bankCode = null;
+        string? bankAccountNumber = null;
+        string? bankAccountName = null;
+
+        if (!string.IsNullOrEmpty(user.RestaurantId))
+        {
+            var restaurant = await dbContext.Restaurants.FindAsync(user.RestaurantId);
+            if (restaurant != null)
+            {
+                status = restaurant.Status;
+                resName = restaurant.Name;
+                bankCode = restaurant.BankCode;
+                bankAccountNumber = restaurant.BankAccountNumber;
+                bankAccountName = restaurant.BankAccountName;
+            }
+        }
 
         return Ok(new AuthResponse(
             token,
@@ -112,8 +128,8 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
             resName,
             user.BranchId,
             status,
-            restaurant?.BankCode,
-            restaurant?.BankAccountNumber,
-            restaurant?.BankAccountName));
+            bankCode,
+            bankAccountNumber,
+            bankAccountName));
     }
 }

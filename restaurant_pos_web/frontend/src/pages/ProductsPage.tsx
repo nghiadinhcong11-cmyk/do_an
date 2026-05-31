@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
-import type { Product } from "../types";
+import type { Product, Category } from "../types";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
@@ -11,27 +12,44 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    fetchProducts();
+    fetchData();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await api.get<Product[]>("/products");
-      setProducts(res.data);
+      const [resProducts, resCategories] = await Promise.all([
+        api.get<Product[]>("/products"),
+        api.get<Category[]>("/categories")
+      ]);
+      setProducts(resProducts.data);
+      setCategories(resCategories.data);
     } catch {
-      alert("Lỗi tải sản phẩm");
+      alert("Lỗi tải dữ liệu");
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      const res = await api.get<Product[]>("/products");
+      setProducts(res.data);
+    } catch {
+      alert("Lỗi tải sản phẩm");
+    }
+  };
+
+  const getCategoryName = (id?: string) => {
+    return categories.find(c => c.id === id)?.name || "Chưa phân loại";
+  };
+
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+    getCategoryName(p.categoryId).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const categories = Array.from(new Set(filteredProducts.map(p => p.category)));
+  const productCategories = Array.from(new Set(filteredProducts.map(p => p.categoryId || "none")));
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -106,7 +124,7 @@ export default function ProductsPage() {
           <p className="text-slate-500">Tổ chức món ăn theo danh mục và tìm kiếm nhanh chóng.</p>
         </div>
         <button
-          onClick={() => { setEditingProduct({ category: "Món chính", price: 0, costPrice: 0, isAvailable: true, isBestSeller: false }); setShowModal(true); }}
+          onClick={() => { setEditingProduct({ categoryId: "", price: 0, costPrice: 0, isAvailable: true, isBestSeller: false, unit: "Ly" }); setShowModal(true); }}
           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl transition-all font-bold shadow-lg shadow-blue-200 active:scale-95"
         >
           + THÊM MÓN MỚI
@@ -130,23 +148,23 @@ export default function ProductsPage() {
       <div className="space-y-12">
         {loading ? (
           <div className="py-20 text-center text-slate-400 animate-pulse font-medium">Đang tải dữ liệu thực đơn...</div>
-        ) : categories.length === 0 ? (
+        ) : productCategories.length === 0 ? (
           <div className="py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200">
             <p className="text-slate-400 font-medium">Không tìm thấy món ăn nào phù hợp.</p>
           </div>
         ) : (
-          categories.map(cat => (
-            <section key={cat} className="space-y-6">
+          productCategories.map(catId => (
+            <section key={catId} className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="h-8 w-1.5 bg-blue-600 rounded-full"></div>
-                <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{cat}</h2>
+                <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{getCategoryName(catId)}</h2>
                 <span className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">
-                  {filteredProducts.filter(p => p.category === cat).length} món
+                  {filteredProducts.filter(p => p.categoryId === catId || (!p.categoryId && catId === "none")).length} món
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredProducts.filter(p => p.category === cat).map((p) => (
+                {filteredProducts.filter(p => p.categoryId === catId || (!p.categoryId && catId === "none")).map((p) => (
                   <div key={p.id} className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all group">
                     {/* Ảnh sản phẩm */}
                     <div className="h-48 bg-slate-50 relative overflow-hidden">
@@ -168,15 +186,15 @@ export default function ProductsPage() {
                     </div>
 
                     <div className="p-6 flex-1 flex flex-col">
-                      <div className="mb-4">
+                      <div className="mb-4 text-center">
                         <h3 className="font-bold text-lg text-slate-800 line-clamp-1 mb-1">{p.name}</h3>
-                        <p className="text-blue-600 font-black text-2xl">{p.price.toLocaleString('vi-VN')}đ</p>
+                        <p className="text-blue-600 font-black text-2xl">{p.price.toLocaleString('vi-VN')}đ<span className="text-[10px] text-slate-400 font-normal uppercase tracking-widest ml-1">/{p.unit || "Ly"}</span></p>
                       </div>
 
-                      <p className="text-slate-400 text-xs line-clamp-2 mb-6 h-8 italic">
+                      <p className="text-slate-400 text-xs line-clamp-2 mb-6 h-8 italic text-center px-2">
                         {p.description || "Không có mô tả chi tiết."}
                       </p>
-
+鼓
                       <div className="mt-auto space-y-4">
                         <div className="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
                           <label className="flex items-center gap-2 cursor-pointer">

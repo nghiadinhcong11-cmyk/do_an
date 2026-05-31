@@ -68,6 +68,9 @@ export default function Layout() {
               <Link to="/products" onClick={closeSidebar} className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white transition-colors">
                 Quản lý món ăn
               </Link>
+              <Link to="/categories" onClick={closeSidebar} className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white transition-colors">
+                Quản lý danh mục
+              </Link>
               <Link to="/branches" onClick={closeSidebar} className="block px-4 py-2 rounded hover:bg-slate-800 hover:text-white transition-colors">
                 Quản lý chi nhánh
               </Link>
