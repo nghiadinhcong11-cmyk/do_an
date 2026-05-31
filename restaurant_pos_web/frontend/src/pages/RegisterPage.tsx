@@ -38,7 +38,6 @@ export default function RegisterPage() {
       setError("Đăng ký thất bại. Tên đăng nhập có thể đã tồn tại.");
     }
   };
-鼓
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-8 md:py-12">
       <div className="w-full max-w-md space-y-6">
@@ -89,7 +88,6 @@ export default function RegisterPage() {
               <input className="w-full border-2 border-green-50 rounded-xl px-4 py-3 focus:border-green-500 outline-none bg-green-50/30 focus:bg-white transition-all text-base" placeholder="Họ và tên của bạn" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} />
             )}
           </div>
-鼓
           {error && <p className="text-sm text-red-500 text-center font-medium bg-red-50 py-2 rounded-lg px-2">{error}</p>}
 
           <button className="w-full bg-slate-900 hover:bg-black text-white rounded-xl py-4 font-bold text-lg shadow-lg active:scale-[0.98] transition-all mt-4">
