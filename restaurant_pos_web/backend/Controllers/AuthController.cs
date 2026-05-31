@@ -100,53 +100,60 @@ public class AuthController(AppDbContext dbContext, JwtTokenService jwtTokenServ
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
     {
-        var username = request.Username.Trim();
-        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
-
-        if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        try
         {
-            return Unauthorized("Tên đăng nhập hoặc mật khẩu không chính xác.");
-        }
+            var username = request.Username.Trim();
+            var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Username == username);
 
-        if (!user.IsActive)
-        {
-            return BadRequest("Tài khoản hiện đang bị khóa.");
-        }
-
-        var token = jwtTokenService.GenerateToken(user);
-
-        user.LastLoginUtc = DateTime.UtcNow;
-        await dbContext.SaveChangesAsync();
-
-        string status = "Approved";
-        string? resName = null;
-        string? bankCode = null;
-        string? bankAccountNumber = null;
-        string? bankAccountName = null;
-
-        if (!string.IsNullOrEmpty(user.RestaurantId))
-        {
-            var restaurant = await dbContext.Restaurants.FindAsync(user.RestaurantId);
-            if (restaurant != null)
+            if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
-                status = restaurant.Status;
-                resName = restaurant.Name;
-                bankCode = restaurant.BankCode;
-                bankAccountNumber = restaurant.BankAccountNumber;
-                bankAccountName = restaurant.BankAccountName;
+                return Unauthorized("Tên đăng nhập hoặc mật khẩu không chính xác.");
             }
-        }
 
-        return Ok(new AuthResponse(
-            token,
-            user.Username,
-            user.Role,
-            user.RestaurantId,
-            resName,
-            user.BranchId,
-            status,
-            bankCode,
-            bankAccountNumber,
-            bankAccountName));
+            if (!user.IsActive)
+            {
+                return BadRequest("Tài khoản hiện đang bị khóa.");
+            }
+
+            var token = jwtTokenService.GenerateToken(user);
+
+            user.LastLoginUtc = DateTime.UtcNow;
+            await dbContext.SaveChangesAsync();
+
+            string status = "Approved";
+            string? resName = null;
+            string? bankCode = null;
+            string? bankAccountNumber = null;
+            string? bankAccountName = null;
+
+            if (!string.IsNullOrEmpty(user.RestaurantId))
+            {
+                var restaurant = await dbContext.Restaurants.FindAsync(user.RestaurantId);
+                if (restaurant != null)
+                {
+                    status = restaurant.Status;
+                    resName = restaurant.Name;
+                    bankCode = restaurant.BankCode;
+                    bankAccountNumber = restaurant.BankAccountNumber;
+                    bankAccountName = restaurant.BankAccountName;
+                }
+            }
+
+            return Ok(new AuthResponse(
+                token,
+                user.Username,
+                user.Role,
+                user.RestaurantId,
+                resName,
+                user.BranchId,
+                status,
+                bankCode,
+                bankAccountNumber,
+                bankAccountName));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Lỗi đăng nhập hệ thống", detail = ex.Message, inner = ex.InnerException?.Message });
+        }
     }
-}
+
