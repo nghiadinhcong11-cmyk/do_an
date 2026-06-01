@@ -73,5 +73,7 @@ class Product {
     };
   }
 
+  // Compatibility getters
   String? get imagePath => imageUrl;
+  String get category => categoryId ?? 'Khác';
 }

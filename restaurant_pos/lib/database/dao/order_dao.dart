@@ -7,7 +7,6 @@ import 'package:sqflite/sqflite.dart';
 class OrderDao {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
-  // 1. Lấy thông tin chung của 1 hóa đơn từ DB bằng Order ID
   Future<OrderModel?> getOrderById(String orderId) async {
     final db = await _dbHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -17,32 +16,35 @@ class OrderDao {
     );
 
     if (maps.isNotEmpty) {
-      return OrderModel.fromMap(maps.first);
+      return OrderModel.fromJson(maps.first);
     }
     return null;
   }
 
-  // 2. Lấy danh sách chi tiết các món ăn của hóa đơn đó (Bảng order_items nối với bảng products)
   Future<List<OrderItem>> getOrderItems(String orderId) async {
     final db = await _dbHelper.database;
 
-    // Sử dụng câu lệnh JOIN SQL để lấy tên món ăn và giá từ bảng product luôn
     final List<Map<String, dynamic>> results = await db.rawQuery('''
-      SELECT oi.quantity, p.id AS product_id, p.name, p.price 
+      SELECT oi.quantity, p.id AS product_id, p.name, p.price, p.restaurantId
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
       WHERE oi.order_id = ?
     ''', [orderId]);
 
     return results.map((item) {
-      return OrderItem(
-        product: Product(
+      final product = Product(
           id: item['product_id'].toString(),
+          restaurantId: item['restaurantId']?.toString() ?? '',
           name: item['name'],
           price: (item['price'] as num).toDouble(),
-          category: '',
-        ),
+        );
+      return OrderItem(
+        productId: product.id,
+        productName: product.name,
+        unitPrice: product.price,
         quantity: item['quantity'],
+        lineTotal: product.price * item['quantity'],
+        product: product,
       );
     }).toList();
   }
@@ -50,7 +52,7 @@ class OrderDao {
   Future<void> insertOrder(txn, OrderModel order) async {
     await txn.insert(
       'orders',
-      order.toMap(),
+      order.toJson(),
     );
   }
 
@@ -62,9 +64,10 @@ class OrderDao {
     for (final item in items) {
       await txn.insert('order_items', {
         'order_id': orderId,
-        'product_id': item.product.id,
+        'product_id': item.productId,
         'quantity': item.quantity,
-        'price': item.product.price,
+        'unitPrice': item.unitPrice,
+        'lineTotal': item.lineTotal,
       });
     }
   }
@@ -74,17 +77,13 @@ class OrderDao {
     List<OrderItem> items,
   ) async {
     for (final item in items) {
-      await txn.insert(
-        'products',
-        {
-          'id': item.product.id,
-          'name': item.product.name,
-          'price': item.product.price,
-          'cost_price': item.product.costPrice,
-          'category': item.product.category,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      if (item.product != null) {
+        await txn.insert(
+          'products',
+          item.product!.toJson(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
     }
   }
 
@@ -96,17 +95,16 @@ class OrderDao {
 
     final List<Map<String, dynamic>> maps = await db.query(
       'orders',
-      where: 'date_time BETWEEN ? AND ?',
+      where: 'createdAtUtc BETWEEN ? AND ?',
       whereArgs: [
         start.toIso8601String(),
         end.toIso8601String(),
       ],
     );
 
-    return maps.map((e) => OrderModel.fromMap(e)).toList();
+    return maps.map((e) => OrderModel.fromJson(e)).toList();
   }
 
-  /// Lấy danh sách các món bán chạy nhất trong khoảng thời gian
   Future<List<Map<String, dynamic>>> getTopSellingProducts(
     DateTime start,
     DateTime end, {
@@ -114,11 +112,11 @@ class OrderDao {
   }) async {
     final db = await _dbHelper.database;
     return await db.rawQuery('''
-      SELECT p.name, SUM(oi.quantity) as total_quantity, SUM(oi.quantity * p.price) as total_revenue
+      SELECT p.name, SUM(oi.quantity) as total_quantity, SUM(oi.quantity * oi.unitPrice) as total_revenue
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.id
       JOIN products p ON oi.product_id = p.id
-      WHERE o.date_time BETWEEN ? AND ?
+      WHERE o.createdAtUtc BETWEEN ? AND ?
       GROUP BY p.id
       ORDER BY total_quantity DESC
       LIMIT ?

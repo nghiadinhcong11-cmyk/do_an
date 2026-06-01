@@ -28,17 +28,12 @@ class StatisticsService {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   Future<SalesReport> calculateReport(DateTime start, DateTime end) async {
-    // 1. Lấy dữ liệu đơn hàng
     List<OrderModel> orders = await _orderDao.getOrdersByDateRange(start, end);
-    
-    // 2. Lấy dữ liệu món bán chạy
     List<Map<String, dynamic>> topProducts = await _orderDao.getTopSellingProducts(start, end);
 
-    // 3. Lấy dữ liệu chi phí
     final allExpenses = await _dbHelper.getAllExpenses();
     double totalExpense = 0;
     
-    // Lọc chi phí trong khoảng thời gian
     for (var e in allExpenses) {
       DateTime expenseDate = DateTime.parse(e['date']);
       if (expenseDate.isAfter(start.subtract(const Duration(seconds: 1))) && 
@@ -53,9 +48,9 @@ class StatisticsService {
 
     for (var order in orders) {
       revenue += order.totalAmount;
-      itemsCount += order.totalItemsQuantity;
+      itemsCount += order.itemCount;
 
-      String dateKey = order.createdAt.toIso8601String().substring(0, 10);
+      String dateKey = order.createdAtUtc.toIso8601String().substring(0, 10);
       dailyRevenueMap[dateKey] = (dailyRevenueMap[dateKey] ?? 0) + order.totalAmount;
     }
 

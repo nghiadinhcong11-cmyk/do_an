@@ -10,7 +10,6 @@ import '../../models/order.dart';
 import '../../models/order_item.dart';
 import '../../services/api/api_order_service.dart';
 import '../../services/api/api_restaurant_service.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 class OrderScreen extends StatefulWidget {
   final String tableId;
@@ -38,7 +37,14 @@ class _OrderScreenState extends State<OrderScreen> {
     try {
       final currentCart = cartProvider.getItemsByTable(widget.tableId);
       final orderItems = currentCart
-          .map((cartItem) => OrderItem(product: cartItem.product, quantity: cartItem.quantity))
+          .map((cartItem) => OrderItem(
+                productId: cartItem.product.id,
+                productName: cartItem.product.name,
+                unitPrice: cartItem.product.price,
+                quantity: cartItem.quantity,
+                lineTotal: cartItem.product.price * cartItem.quantity,
+                product: cartItem.product,
+              ))
           .toList();
 
       final now = DateTime.now();
@@ -46,8 +52,10 @@ class _OrderScreenState extends State<OrderScreen> {
       final vatAmount = cartProvider.getVatByTable(widget.tableId);
 
       final order = OrderModel(
+        id: '', // Server will generate
+        restaurantId: auth.restaurantId ?? '',
         tableId: widget.tableId,
-        dateTime: now,
+        createdAtUtc: now,
         invoiceNo: 'INV-${now.millisecondsSinceEpoch}',
         lookupCode: 'LKP-${now.microsecondsSinceEpoch}',
         subTotal: subTotal,
@@ -88,7 +96,6 @@ class _OrderScreenState extends State<OrderScreen> {
   Future<bool?> _showPaymentQRDialog(AuthProvider auth, double amount) async {
     setState(() => _isProcessing = true);
     
-    // Luôn lấy thông tin ngân hàng mới nhất từ Server trước khi hiện QR
     try {
       final restaurantService = ApiRestaurantService(auth.apiClient);
       final info = await restaurantService.getMyRestaurantInfo();
@@ -100,7 +107,6 @@ class _OrderScreenState extends State<OrderScreen> {
       );
     } catch (e) {
       debugPrint('Không thể cập nhật thông tin ngân hàng: $e');
-      // Nếu lỗi mạng, vẫn tiếp tục dùng thông tin cũ trong auth nếu có
     } finally {
       setState(() => _isProcessing = false);
     }
@@ -159,7 +165,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 ),
               ),
             ),
-鼓           const SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(AppFormat.money(amount), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.redAccent)),
             const SizedBox(height: 8),
             Text('STK: $bankAccount', style: const TextStyle(fontWeight: FontWeight.w500)),

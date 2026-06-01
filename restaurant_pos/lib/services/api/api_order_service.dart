@@ -9,7 +9,7 @@ class ApiOrderService {
 
   Future<List<OrderModel>> getAllOrders(List<Product> products) async {
     final List<dynamic> data = await _apiClient.get('/orders');
-    return data.map((json) => OrderModel.fromJson(json, products)).toList();
+    return data.map((json) => OrderModel.fromJson(json)).toList();
   }
 
   Future<OrderModel> createOrder(OrderModel order) async {
@@ -19,6 +19,6 @@ class ApiOrderService {
 
   Future<OrderModel> getOrderById(String id, List<Product> products) async {
     final data = await _apiClient.get('/orders/$id');
-    return OrderModel.fromJson(data, products);
+    return OrderModel.fromJson(data);
   }
 }

@@ -38,10 +38,11 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   }
 
   void _showEditProductDialog(Product product) {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
     final nameController = TextEditingController(text: product.name);
     final priceController = TextEditingController(text: product.price.toString());
     final costPriceController = TextEditingController(text: product.costPrice.toString());
-    final categoryController = TextEditingController(text: product.category);
+    final categoryController = TextEditingController(text: product.categoryId);
 
     showDialog(
       context: context,
@@ -54,7 +55,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
               TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Tên món')),
               TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Giá bán'), keyboardType: TextInputType.number),
               TextField(controller: costPriceController, decoration: const InputDecoration(labelText: 'Giá vốn'), keyboardType: TextInputType.number),
-              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Danh mục')),
+              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'ID Danh mục')),
             ],
           ),
         ),
@@ -67,10 +68,11 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
               final navigator = Navigator.of(dialogContext);
               await provider.updateProduct(Product(
                 id: product.id,
+                restaurantId: auth.restaurantId ?? '',
                 name: nameController.text.trim(),
                 price: double.tryParse(priceController.text) ?? 0,
                 costPrice: double.tryParse(costPriceController.text) ?? 0,
-                category: categoryController.text.trim().isEmpty ? 'Khác' : categoryController.text.trim(),
+                categoryId: categoryController.text.trim(),
                 isAvailable: product.isAvailable,
                 isBestSeller: product.isBestSeller,
               ));
@@ -86,6 +88,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   }
 
   void _showAddProductDialog() {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
     final nameController = TextEditingController();
     final priceController = TextEditingController();
     final costPriceController = TextEditingController();
@@ -102,7 +105,7 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
               TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Tên món')),
               TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Giá bán'), keyboardType: TextInputType.number),
               TextField(controller: costPriceController, decoration: const InputDecoration(labelText: 'Giá vốn'), keyboardType: TextInputType.number),
-              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'Danh mục')),
+              TextField(controller: categoryController, decoration: const InputDecoration(labelText: 'ID Danh mục')),
             ],
           ),
         ),
@@ -115,10 +118,11 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
               final navigator = Navigator.of(dialogContext);
               await provider.addProduct(Product(
                 id: '0',
+                restaurantId: auth.restaurantId ?? '',
                 name: nameController.text.trim(),
                 price: double.tryParse(priceController.text) ?? 0,
                 costPrice: double.tryParse(costPriceController.text) ?? 0,
-                category: categoryController.text.trim().isEmpty ? 'Khác' : categoryController.text.trim(),
+                categoryId: categoryController.text.trim(),
               ));
               if (!mounted) return;
               navigator.pop();

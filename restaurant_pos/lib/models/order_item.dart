@@ -1,3 +1,5 @@
+import 'product.dart';
+
 class OrderItem {
   final int id;
   final String orderId;
@@ -7,16 +9,20 @@ class OrderItem {
   final int quantity;
   final double lineTotal;
   final String? notes;
+  
+  // Extra field for UI convenience
+  final Product? product;
 
   OrderItem({
-    required this.id,
-    required this.orderId,
+    this.id = 0,
+    this.orderId = '',
     required this.productId,
     this.productName,
     required this.unitPrice,
     required this.quantity,
     required this.lineTotal,
     this.notes,
+    this.product,
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -25,10 +31,11 @@ class OrderItem {
       orderId: json['orderId']?.toString() ?? '',
       productId: json['productId']?.toString() ?? '',
       productName: json['productName'],
-      unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0.0,
+      unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? (json['price'] as num?)?.toDouble() ?? 0.0,
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       lineTotal: (json['lineTotal'] as num?)?.toDouble() ?? 0.0,
       notes: json['notes'],
+      product: json['product'] != null ? Product.fromJson(json['product']) : null,
     );
   }
 
@@ -42,6 +49,10 @@ class OrderItem {
       'quantity': quantity,
       'lineTotal': lineTotal,
       'notes': notes,
+      if (product != null) 'product': product!.toJson(),
     };
   }
+
+  // Compatibility getter
+  double get price => unitPrice;
 }

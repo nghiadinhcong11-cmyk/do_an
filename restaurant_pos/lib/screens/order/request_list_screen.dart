@@ -49,9 +49,7 @@ class RequestListScreen extends StatelessWidget {
     final tableProvider = Provider.of<TableProvider>(context, listen: false);
     final auth = Provider.of<AuthProvider>(context, listen: false);
 
-    // If it's an order request, add items to the table's cart
     if (request.type == RequestType.order && request.items != null) {
-      // Ensure products are loaded to get correct prices
       if (productProvider.products.isEmpty) {
         try {
           await productProvider.fetchProducts(auth.userId ?? 'admin');
@@ -61,26 +59,23 @@ class RequestListScreen extends StatelessWidget {
       }
 
       for (var item in request.items!) {
-        // Try to find the actual product from the provider to get the correct price
         final realProduct = productProvider.products.firstWhere(
           (p) => p.id == item.productId,
           orElse: () => Product(
             id: item.productId,
+            restaurantId: auth.restaurantId ?? '',
             name: item.productName,
             price: 0,
           ),
         );
 
-        // Add to cart with correct price from local database/API
         await cartProvider.addToCart(request.tableId, realProduct);
 
-        // Add remaining items if quantity > 1
         for (int i = 1; i < item.quantity; i++) {
           await cartProvider.addToCart(request.tableId, realProduct);
         }
       }
 
-      // Update table status
       await tableProvider.updateTableStatus(
           request.tableId, TableStatus.occupied);
 
@@ -123,7 +118,7 @@ class RequestListScreen extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                      color: typeColor.withValues(alpha: 0.1),
+                      color: typeColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20)),
                   child: Text(typeText,
                       style: TextStyle(

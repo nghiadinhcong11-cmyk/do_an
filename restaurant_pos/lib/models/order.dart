@@ -1,6 +1,6 @@
 ﻿import 'order_item.dart';
 
-class Order {
+class OrderModel {
   final String id;
   final String restaurantId;
   final String? branchId;
@@ -27,7 +27,7 @@ class Order {
 
   final List<OrderItem> items;
 
-  Order({
+  OrderModel({
     required this.id,
     required this.restaurantId,
     this.branchId,
@@ -54,8 +54,8 @@ class Order {
     required this.items,
   });
 
-  factory Order.fromJson(Map<String, dynamic> json) {
-    return Order(
+  factory OrderModel.fromJson(Map<String, dynamic> json) {
+    return OrderModel(
       id: json['id']?.toString() ?? '',
       restaurantId: json['restaurantId']?.toString() ?? '',
       branchId: json['branchId']?.toString(),
@@ -111,4 +111,7 @@ class Order {
       'items': items.map((i) => i.toJson()).toList(),
     };
   }
+
+  // Compatibility getter
+  DateTime get dateTimeUtc => createdAtUtc;
 }
